@@ -72,7 +72,7 @@ def match(term1,term2,i1,i2,nondummy_map):
 
 def pick(coeff1, coeff2):
     #print 'length of coeff1',len(coeff1)
-    for c1 in reversed(range(0,len(coeff1))):
+    for c1 in reversed(list(range(0,len(coeff1)))):
         '''
         print 'in pick',len(coeff1[c1]), len(coeff2[c1]), coeff1[c1][0].seen,coeff1[c1][1].seen,
         if len(coeff1[c1])==4:
@@ -102,7 +102,7 @@ def pick(coeff1, coeff2):
 		    coeff1[c1][i].seen==1
 		    coeff2[c1][i].seen==1
 		    return c1, coeff1[c1][i], coeff2[c1][i]
-    print "something is wrong in picking, see compare function line 48 file in library"
+    print("something is wrong in picking, see compare function line 48 file in library")
     return -1,0,0
 
     exit()

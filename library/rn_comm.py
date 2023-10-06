@@ -15,7 +15,7 @@ def rank(term):
 	    elif term.isa(ind)==1:
 		rnk=rnk+0.5
 	    else:
-		print 'problem in functiton rank in library/rn_comm'
+		print('problem in functiton rank in library/rn_comm')
 		#sys.end()
 	for ind in lo:
 	    if term.isi(ind)==1:
@@ -23,7 +23,7 @@ def rank(term):
 	    elif term.isa(ind)==1:
 		rnk=rnk-0.5
 	    else:
-		print 'problem in functiton rank in library/rn_comm'
+		print('problem in functiton rank in library/rn_comm')
 		#.end()
 	return rnk
     else :

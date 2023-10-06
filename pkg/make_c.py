@@ -1,5 +1,5 @@
-import fix_uv
-import func_ewt
+from . import fix_uv
+from . import func_ewt
 from collections import deque
 import copy
 fix_temp = fix_uv

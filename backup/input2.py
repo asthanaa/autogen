@@ -9,7 +9,7 @@ from library import convert_pqr
 from library import compare_overall2 as ce
 from library import compare_test as ctest
 from library import h_third as ht
-print 'case of '
+print('case of ')
 list_terms=[]
 list_terms1=[]
 
@@ -123,7 +123,7 @@ list_terms=full_con.full_terms(list_terms)
 '''
 #list_terms.extend(prod(['X1'],comm(comm(['V2'],['T11'],0),['T12'],0),1.0))
 list_terms=full_con.full_terms(list_terms)
-print 'inside main compare'
+print('inside main compare')
 #print_terms.print_terms(list_terms,'latex_output.txt')
 list_terms=ce.compare_envelope(list_terms,1.0,1)
 print_terms.print_terms(list_terms,'energy.txt')

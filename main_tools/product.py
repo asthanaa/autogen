@@ -13,7 +13,7 @@ import library.change_terms as ct
 import library.class_term as class_terms
 import library as lib
 import library. compare as cpre
-import multi_cont
+from . import multi_cont
 import library.compare_envelope as cpre_env
 import library.compare_overall as cpre_env2
 import library.special_conditions as cond
@@ -30,9 +30,9 @@ def prod(a,b,last):
     #print a,b
     #develop dict_ind
     if a and b:
-        print 'there are contractions in this commutator'
+        print('there are contractions in this commutator')
     else:
-        print 'there are no contractions in this commutator'
+        print('there are no contractions in this commutator')
         return []
     if type(a[0])==str and type(b[0])==str:
 	dict_add={}
@@ -43,7 +43,7 @@ def prod(a,b,last):
 	elif type(b[0])==str:
 	    dict_add=a[0].dict_ind
     else :
-        dict_add=dict(a[0].dict_ind.items()+b[0].dict_ind.items())
+        dict_add=dict(list(a[0].dict_ind.items())+list(b[0].dict_ind.items()))
     #intelligently check input
     if type(a[0])==str:
 	#build operator
@@ -62,7 +62,7 @@ def prod(a,b,last):
     st1=[]
     co2=[]
     co1=[]
-    print 'doing contraction through multi_cont'
+    print('doing contraction through multi_cont')
     for t1 in a:
 	for t2 in b:
     	    stt,cot=multi_cont.multi_cont(t1.st,t2.st,t1.co,t2.co)
@@ -132,7 +132,7 @@ def prod(a,b,last):
 	        co2.extend(cot)
         #lib.print_op.print_op(st2,co2)
     elif on!=0:
-	print 'error in commutator input on switch-------------------'
+	print('error in commutator input on switch-------------------')
 
 
     #only if you want fully contracted 
@@ -163,7 +163,7 @@ def prod(a,b,last):
     list_terms=full_con.full_terms(list_terms)
     for term in list_terms:
         create_matrices(term)
-    print 'matrices of all terms created'
+    print('matrices of all terms created')
     cpre_env2.compare_envelope(list_terms, fc, last)    
     #cpre_env.compare_envelope(list_terms, fc, last)    
     #Special condition- when there are atlaest three operators, atleast two are equivalent and one of them is not contracting with a previous

@@ -1,4 +1,4 @@
-import eq8
+from . import eq8
 import string
 import numpy as np
 import copy
@@ -106,13 +106,13 @@ class term(object):
         #return num
 
         if (self.fac*term2.fac)<0 and num!=0:
-            print num, '-1'
+            print(num, '-1')
             return -1
         elif (self.fac*term2.fac)>0 and num!=0:
-            print num, '1'
+            print(num, '1')
             return 1
         else :
-            print num, '0'
+            print(num, '0')
             return 0
 
     #algorithm to condition that each contraction should have 1 end to H
@@ -228,15 +228,15 @@ class term(object):
             term2.fac=0.0
 
     def print_term(self):
-        print self.fac,
-        print 'Sum', self.sum_list,
+        print(self.fac, end=' ')
+        print('Sum', self.sum_list, end=' ')
         for i in range(len(self.large_op_list)):
 	    if self.large_op_list[i].name[0]!='X':
-                print self.large_op_list[i].name[0],self.coeff_list[i],
+                print(self.large_op_list[i].name[0],self.coeff_list[i], end=' ')
 	if self.st[0][-1].kind=='op':
 
-	    print 'E^',self.st[0][-1].upper,'_',self.st[0][-1].lower,
-        print '\n',
+	    print('E^',self.st[0][-1].upper,'_',self.st[0][-1].lower, end=' ')
+        print('\n', end=' ')
     def print_latex(self, f):
         #f=open('exp_out_latex.txt','a')
         f.write(str(self.fac))

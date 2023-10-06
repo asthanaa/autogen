@@ -3,9 +3,9 @@ suggestion1: in case there is an error in sign function, do not use compare_over
 '''
 import numpy as np
 import copy
-import compare_functions as cf
-import compare_functions2 as cf2
-from sign_function import level3_sign
+from . import compare_functions as cf
+from . import compare_functions2 as cf2
+from .sign_function import level3_sign
 def create_matrices(term):
     term.imatrix=np.zeros((len(term.large_op_list),len(term.large_op_list)))
     term.amatrix=np.zeros((len(term.large_op_list),len(term.large_op_list)))

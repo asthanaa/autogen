@@ -9,7 +9,7 @@ from library import convert_pqr
 from library import compare_overall2 as ce1
 from library import compare_overall as ce
 from library import h_third as ht
-print 'case of '
+print('case of ')
 list_terms=[]
 
 

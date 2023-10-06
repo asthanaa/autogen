@@ -1,5 +1,5 @@
-import compare_test as cpre
-import print_terms as pt
+from . import compare_test as cpre
+from . import print_terms as pt
 #arguments: list of terms, face factor, last means whether this is the last commutator or not (0,1)
 def compare_envelope(list_terms, fc,last):
     #compare terms based on 5 levels of check all in cpre.compare()
@@ -42,7 +42,7 @@ def compare_envelope(list_terms, fc,last):
 	        #print 'deleting operator coeff'
 	        term.coeff_list.pop()
 	    elif len(term.coeff_list)>len(term.map_org):
-	        print ' in compare envolope terminal error'
+	        print(' in compare envolope terminal error')
 	        sys.exit(0)
     ##list_terms=pt.clean_list(list_terms)
     return list_terms

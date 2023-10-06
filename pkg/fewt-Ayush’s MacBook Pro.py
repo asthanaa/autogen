@@ -21,12 +21,12 @@
 #fix_uv file contains the function fix which fixes contractions in an operator string. It either forms a contraction and then print it in tec.txt or simply prints in tec.txt without forming contractions, as required.
 
 
-import fix_uv
-import func_ewt
+from . import fix_uv
+from . import func_ewt
 import copy
 import sys
 from collections import deque
-import make_c
+from . import make_c
 fix_temp = fix_uv
 func = func_ewt
 f = open("tec.txt", "w")

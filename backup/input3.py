@@ -12,7 +12,7 @@ from library import compare_overall as ce
 #from library import compare_overall2 as ce
 from library import compare_test as ctest
 from library import h_third as ht
-print 'case of '
+print('case of ')
 list_terms=[]
 list_terms1=[]
 

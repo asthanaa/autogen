@@ -28,20 +28,20 @@ def symm(list_terms):
 	other_terms_temp=[]
 	other_terms.append(term)
 	#make a list of ind for finding unie pairs
-	print term.st[0][-1].upper, term.st[0][-1].lower
+	print(term.st[0][-1].upper, term.st[0][-1].lower)
 	for coeff in term.coeff_list:
 	    for ind in coeff:
 		if ind not in term.sum_list:
 		    list_ind.append(ind)
-	print list_ind
+	print(list_ind)
 	#find unique pairs and split terms into two or multiple of twos
 	for i1 in list_ind:
 	    for i2 in list_ind:
 	        if unique(i1,i2, term) and i1!=i2:
-		    print 'found uniuq pair', i1,i2
+		    print('found uniuq pair', i1,i2)
 		    for item in other_terms:
 			item.fac=item.fac/2.0
-			print 'getting split'
+			print('getting split')
 	    	        other_terms_temp.append(split_term(copy.deepcopy(item),i1,i2))
 		    other_terms.extend(other_terms_temp)
 		    other_terms_temp=[]

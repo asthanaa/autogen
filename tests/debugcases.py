@@ -17,7 +17,7 @@ def general_term(ops):
 	term.sum_list.extend(item.sum_ind)	
 	term.st[0][-1].upper.extend(item.st[0][-1].upper)
 	term.st[0][-1].lower.extend(item.st[0][-1].lower)
-    print term.st[0][-1].upper
-    print term.map_org, term.dict_ind
+    print(term.st[0][-1].upper)
+    print(term.map_org, term.dict_ind)
     return term
 

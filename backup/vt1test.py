@@ -8,7 +8,7 @@ from library import full_con
 #if you want a commutator [V,T2]-> comm['op1'],['op2'],prefactor)
 #NOTE : prefactor should be 0 in case this is not the last of the nested prefactor (clearer in the next eexample)
 
-print 'case of [V,T1]'
+print('case of [V,T1]')
 list_terms=comm(['V2'],['T1'],1)
 print_terms.print_terms(list_terms,'vt1test')
 

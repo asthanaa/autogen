@@ -52,9 +52,9 @@ def permutation_check(term1,term2):
         #Two terms are permutations when the two same type of operators are not equivalent
         if len(map1_open[0])>2 and len(map2_open[1])>2 :
             eq12=0
-            print 'case indices',int(map1_open[0][2]),int(map2_open[0][2]),int(map1_open[1][2]),int(map2_open[1][2])
+            print('case indices',int(map1_open[0][2]),int(map2_open[0][2]),int(map1_open[1][2]),int(map2_open[1][2]))
             if int(map1_open[0][2])!=int(map2_open[0][2]) and  int(map1_open[1][2])!=int(map2_open[1][2]):
-                print 'entered case t11,t12'
+                print('entered case t11,t12')
                 #check is the two opertors are equivalent
                 for i in range(1,len(term1.large_op_list)):
                     if map1_open[0]==term1.large_op_list[i].name:
@@ -100,7 +100,7 @@ def permutation_check(term1,term2):
                 if map1_op and map2_op:
                     if map1_op==map2_op:
                         eq34=1
-        print 'equal variables', eq12,eq34,map1_open,map2_open,map1_op,map2_op,map3_op,map4_op
+        print('equal variables', eq12,eq34,map1_open,map2_open,map1_op,map2_op,map3_op,map4_op)
         if eq12==1 and eq34==1:
             return 1
         else:
@@ -130,7 +130,7 @@ def permute_matrix_check(term1,term2,after_permute):
             #print imat
             if np.array_equal(imat,term1.imatrix) and np.array_equal(amat,term1.amatrix):
                 if permutation_check(term1,term2):
-                    print 'this matrix was found equal:',term1.coeff_list,term2.coeff_list,term1.imatrix,imat,after_permute
+                    print('this matrix was found equal:',term1.coeff_list,term2.coeff_list,term1.imatrix,imat,after_permute)
                     tmp_set=copy.copy(set_p)
                     for i in range(len(tmp_set)):
                         for j in range(i+1,len(tmp_set)):

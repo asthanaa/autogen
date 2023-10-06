@@ -13,7 +13,7 @@ import library.change_terms as ct
 import library.class_term as class_terms
 import library as lib
 import library.compare as cpre
-import multi_cont
+from . import multi_cont
 import library.compare_envelope as cpre_env
 import library.compare_overall as cpre_env2
 import library.special_conditions as cond
@@ -37,9 +37,9 @@ def comm(a,b,last):
     #print a,b
     #develop dict_ind
     if a and b:
-        print 'there are contractions in this commutator'
+        print('there are contractions in this commutator')
     else:
-        print 'there are no contractions in this commutator'
+        print('there are no contractions in this commutator')
         return []
     if type(a[0])==str and type(b[0])==str:
 	dict_add={}
@@ -53,7 +53,7 @@ def comm(a,b,last):
 	elif type(b[0])==str:
 	    dict_add=a[0].dict_ind
     else :
-        dict_add=dict(a[0].dict_ind.items()+b[0].dict_ind.items())
+        dict_add=dict(list(a[0].dict_ind.items())+list(b[0].dict_ind.items()))
     #intelligently check input
     first_cont=0
     if type(a[0])==str:
@@ -86,7 +86,7 @@ def comm(a,b,last):
 	    #lib.print_op.print_op(item.st,item.co)
     '''
 
-    print 'doing contraction through multi_cont'
+    print('doing contraction through multi_cont')
     for t1 in a:
 	for t2 in b:
     	    stt,cot=multi_cont.multi_cont(t1.st,t2.st,t1.co,t2.co)
@@ -164,7 +164,7 @@ def comm(a,b,last):
 	        co2.extend(cot)
         #lib.print_op.print_op(st2,co2)
     elif on!=0:
-	print 'error in commutator input on switch-------------------'
+	print('error in commutator input on switch-------------------')
 
 
     #only if you want fully contracted 

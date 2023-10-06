@@ -6,9 +6,9 @@
 
 from collections import deque
 import copy
-import parity
-import func_ewt
-import returnop
+from . import parity
+from . import func_ewt
+from . import returnop
 func=func_ewt
 def fix_con(op_no, cnt, lim_cnt, t_list, matched, contracted, contracted_l, contracted_r, a, i, u, full, f, full_pos, i_c, full_con, const_con):
     cnt_tmp=cnt+1 # put condition of limiting cnt
@@ -145,7 +145,7 @@ def fix_con(op_no, cnt, lim_cnt, t_list, matched, contracted, contracted_l, cont
 		    try_full_con.upper=[tmp_2]
 		    try_full_con.lower=[tmp_1]
 		else :
-		    print "!!!!not printing anywhere, if this occurs:there may be a problem in the try contraction in fix_uv"
+		    print("!!!!not printing anywhere, if this occurs:there may be a problem in the try contraction in fix_uv")
 		new_list.append(tmp_3)
 
 		#print "---------the try full contracted object is made ----", try_full_con.kind, try_full_con.upper, '\n'
@@ -185,7 +185,7 @@ def fix_con(op_no, cnt, lim_cnt, t_list, matched, contracted, contracted_l, cont
 
 
 	except:
-	    print "--------------------------------------------------------------------The try statement in fix_uv did not work. Something wrong in the piece of code tin 'try'"
+	    print("--------------------------------------------------------------------The try statement in fix_uv did not work. Something wrong in the piece of code tin 'try'")
 
 
 	#print "before parity check ", full_formed, full_pos

@@ -199,37 +199,37 @@ def list_of_excp(degree, i, j):
 
         if a_cum.upper[i]!=a_cum.lower[j]:
             excep.append('a')
-            print "exception a"
+            print("exception a")
         if b_cum.upper[i]!=b_cum.lower[j]:
             excep.append('b')
-            print "exception b"
+            print("exception b")
         if c_cum.upper[i]!=c_cum.lower[j]:
             excep.append('c')
-            print "exception c"
+            print("exception c")
         if d_cum.upper[i]!=d_cum.lower[j]:
             excep.append('d')
-            print "exception d"
+            print("exception d")
         if e_cum.upper[i]!=e_cum.lower[j]:
             excep.append('e')
-            print "exception e"
+            print("exception e")
         if f_cum.upper[i]!=f_cum.lower[j]:
             excep.append('f')
-            print "exception f"
+            print("exception f")
         if g_cum.upper[i]!=g_cum.lower[j]:
             excep.append('g')
-            print "exception g"
+            print("exception g")
         if h_cum.upper[i]!=h_cum.lower[j]:
             excep.append('h')
-            print "exception h"
+            print("exception h")
         if i_cum.upper[i]!=i_cum.lower[j]:
             excep.append('i')
-            print "exception i"
+            print("exception i")
         if j_cum.upper[i]!=j_cum.lower[j]:
             excep.append('j')
-            print "exception j"
+            print("exception j")
 
         if excep:
-            print excep
+            print(excep)
         return excep
 
     else :
@@ -240,7 +240,7 @@ def sub_1D(mat1, mat2):
             mat1[i]=mat1[i]-mat2[i]
         return mat1
     else:
-        print "error:matrix of uneven length in addition_matrix function"
+        print("error:matrix of uneven length in addition_matrix function")
 def addition_matrix(degree, exceptions):
     matrix = []
     const = 1.0
@@ -286,7 +286,7 @@ def addition_matrix(degree, exceptions):
                 matrix = sub_1D(matrix, [-1,1,-1,-2,0,0])
             if item == 'j':
                 matrix = sub_1D(matrix, [1,-1,-1,0,0,-2])
-            print "matrix ", matrix
+            print("matrix ", matrix)
     return const, matrix
 def cummulant(contracted, full_formed, new_list, con_spin_upper, con_spin_lower):
 
@@ -702,13 +702,13 @@ def make_operators(holes, active, particles):
     return overall_i, overall_u, overall_a
 #evaluate functioon only evaluates till lambda 2 nnot higher degree lambda
 def multiply_cum_matrix(tmp_lambda, mul_mat):
-    print " matrix multiplied"
+    print(" matrix multiplied")
 def evaluate(full_con, const_con, gamma_sin, eta_sin, lambda2, lambda3=None):
     if lambda3 is None:
         lambda3=[]
     val = 1.0
     val_expr = 0.0
-    print full_con
+    print(full_con)
     for i in range(len(full_con)):
 	val=1.0
 	for j in range(len(full_con[i])):
@@ -724,14 +724,14 @@ def evaluate(full_con, const_con, gamma_sin, eta_sin, lambda2, lambda3=None):
 		up = full_con[i][j].upper
 		lo = full_con[i][j].lower
 		val = val*gamma_sin[int(up[0].name)][int(lo[0].name)]
-		print 'valueof gamma : ', val
+		print('valueof gamma : ', val)
 
-                print 'gamma va;upper;lower:- ', gamma_sin[int(up[0].name)][int(lo[0].name)], full_con[i][j].upper, full_con[i][j].lower
+                print('gamma va;upper;lower:- ', gamma_sin[int(up[0].name)][int(lo[0].name)], full_con[i][j].upper, full_con[i][j].lower)
 	    elif full_con[i][j].kind == 'e':
 		up = full_con[i][j].upper
 		lo = full_con[i][j].lower
 		val = val*eta_sin[int(up[0].name)][int(lo[0].name)]
-		print 'value of eta :',val
+		print('value of eta :',val)
 		#print 'eta va; - ', gamma_sin[int(up[0].name)][int(lo[0].name)], full_con[i][j].upper, full_con[i][j].lower, const_con[i][0], const_con[i][1]
 
 	    elif full_con[i][j].kind == 'l':
@@ -764,7 +764,7 @@ def evaluate(full_con, const_con, gamma_sin, eta_sin, lambda2, lambda3=None):
 		        val_tmp += tmp_mat1*full_con[i][j].matrix[1]
 		        #print 'value after 2nd lambda', val_tmp	
 			#print 'case of 2 lambda values :', tmp_mat1, full_con[i][j].upper, full_con[i][j].lower
-		    print 'final value of lambda :',val_tmp
+		    print('final value of lambda :',val_tmp)
 		    #print 'this is the lambda matrix', lambda2
 
 		if len(full_con[i][j].upper)==3:
@@ -780,5 +780,5 @@ def evaluate(full_con, const_con, gamma_sin, eta_sin, lambda2, lambda3=None):
 		val = val*val_tmp
 	#print 'in the evaluate per term loop', val_expr, " + ", val, const_con[i][0], const_con[i][1]
 	val_expr += val*const_con[i][0]*const_con[i][1]
-	print 'val expression', val_expr
+	print('val expression', val_expr)
     return val_expr

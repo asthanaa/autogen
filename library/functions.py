@@ -19,5 +19,5 @@ def main1():
     a=['a','b','c']
     out=[]
     permute(a,0,len(a)-1, out)
-    print out
+    print(out)
 

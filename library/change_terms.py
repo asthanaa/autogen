@@ -1,7 +1,7 @@
 #accompanied always with term.cond_cont in order to generate map_org
 #dont need the dict correct later
-import class_term
-import print_op
+from . import class_term
+from . import print_op
 import copy
 def change_terms1(a, b, fac,dict_ind, list_op_used):
 
@@ -16,7 +16,7 @@ def change_terms1(a, b, fac,dict_ind, list_op_used):
 	    #Only multiply op.fac when computing the outermost commutator
             sum_ind.extend(op.sum_ind)
             coeff.append(op.coeff)
-	print fac, 'fac is this for each term'
+	print(fac, 'fac is this for each term')
     else:
 	fac=1.0
 	for op in list_op_used:

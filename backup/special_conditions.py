@@ -1,6 +1,6 @@
 def startequiv_cond(list_terms):
     for term in list_terms:
-        print  term.map_org 
+        print(term.map_org) 
         d1=0
         t1=0
         d2=0
@@ -41,7 +41,7 @@ def startequiv_cond(list_terms):
                     if item.name not in mapping:
                         term.fac=term.fac*2.0
         if d1>1:
-            print 'inside the special conditions'
+            print('inside the special conditions')
             equivop='D1'
             first=0
             second=0

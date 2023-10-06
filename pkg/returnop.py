@@ -1,4 +1,4 @@
-import func_ewt
+from . import func_ewt
 
 def returnop2(full_con_term, output, new_list):
     new_list.append('\\{E^{')

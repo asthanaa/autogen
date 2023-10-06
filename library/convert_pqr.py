@@ -7,9 +7,9 @@
 #recursive convert function - if term doesnt contain pqr, append to final
 #else : convert 1 pqr to i and a (producing 2 terms) and call convert to the rest
 
-import print_terms
+from . import print_terms
 import copy
-from next_op import next_op
+from .next_op import next_op
 def pqr_present(term):
     for coeff in term.coeff_list:
 	for ind in coeff:
@@ -24,7 +24,7 @@ def ia_limit(term):
     a=0
     i=0
     p=0
-    for key, value in term.dict_ind.items():
+    for key, value in list(term.dict_ind.items()):
 
 	if len(key)==1:
             if key>='a' and key<='h':
@@ -80,7 +80,7 @@ def change_op(term, oldi, newi):
 	        term.st[0][-1].lower[ind]=newi
 	        return term
     else :
-	print 'ERROR in change op in change+pqr. There is no op in the term. term is fully contracted yet has general indices'
+	print('ERROR in change op in change+pqr. There is no op in the term. term is fully contracted yet has general indices')
 def add_dict(term,coeff,newi):
     for i in range(len(term.coeff_list)):
 	if term.coeff_list[i]==coeff:
@@ -120,7 +120,7 @@ def convert_single(term):
         final_terms.append(term)
     	return final_terms
 
-    print 'ERROR :something wrong in pqr convert : other than pqr_present or not present happening!!!!!!!'
+    print('ERROR :something wrong in pqr convert : other than pqr_present or not present happening!!!!!!!')
     return []
 	
 def convert(term):

@@ -21,12 +21,12 @@
 #fix_uv file contains the function fix which fixes contractions in an operator string. It either forms a contraction and then print it in tec.txt or simply prints in tec.txt without forming contractions, as required.
 
 
-import fix_uv
-import func_ewt
+from . import fix_uv
+from . import func_ewt
 import copy
 import sys
 from collections import deque
-import make_c
+from . import make_c
 fix_temp = fix_uv
 func = func_ewt
 f = open("tec.txt", "w")
@@ -49,15 +49,15 @@ def ewt():
     	    #return self.name
 
     #...........input for spin free wicks therem
-    print "\n Spin Free GWT\n"
+    print("\n Spin Free GWT\n")
 
     #input menu and strings
-    print "\n----------------------------------------------------------------\n    Hello, this is Spin Free GWT expression generator. \n    Currently it is designed to only work with 2 normal ordered strings. So Ignore the menu \n-------------------------------------------------------\n"
-    menu = raw_input("            MENU \n1 - Single string EWT generator\n2 - Two normal ordered strings EWT generator\n3 - Commutator type two string EWT generator\n")
+    print("\n----------------------------------------------------------------\n    Hello, this is Spin Free GWT expression generator. \n    Currently it is designed to only work with 2 normal ordered strings. So Ignore the menu \n-------------------------------------------------------\n")
+    menu = input("            MENU \n1 - Single string EWT generator\n2 - Two normal ordered strings EWT generator\n3 - Commutator type two string EWT generator\n")
     if menu=='1' or menu=='2' or menu=='3':
         pass
     else:
-        print "Did you enter a number in (1, 2, 3) ? If no, kindly co-operate, I am a computer and do not understand much :(. Run Again !"
+        print("Did you enter a number in (1, 2, 3) ? If no, kindly co-operate, I am a computer and do not understand much :(. Run Again !")
         sys.exit()
     commutator=0
 
@@ -65,17 +65,17 @@ def ewt():
     menu='2'
     if menu == '1':
 
-        string1_upper = list(raw_input("Enter Operator :\nInput the upper indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited; )\nExample : uv\nOperator string: "))
-        string1_lower = list(raw_input("input the lower indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited; 1-daggered; 0-undaggered)\nExample : uv\nOperator string: "))
+        string1_upper = list(input("Enter Operator :\nInput the upper indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited; )\nExample : uv\nOperator string: "))
+        string1_lower = list(input("input the lower indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited; 1-daggered; 0-undaggered)\nExample : uv\nOperator string: "))
     elif menu=='2':
-        string1_upper = list(raw_input("Enter Operator 1 : Input the upper indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited;)\nExample : uv\nOperator string: "))
-        string1_lower = list(raw_input("input the lower indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited; )\nExample : uv\nOperator string: "))
-        string2_upper = list(raw_input("Enter Operator 2 : Input the upper indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited;)\nExample : uv\nOperator string: "))
-        string2_lower = list(raw_input("input the lower indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited;)\nExample : uv\nOperator string: "))
+        string1_upper = list(input("Enter Operator 1 : Input the upper indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited;)\nExample : uv\nOperator string: "))
+        string1_lower = list(input("input the lower indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited; )\nExample : uv\nOperator string: "))
+        string2_upper = list(input("Enter Operator 2 : Input the upper indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited;)\nExample : uv\nOperator string: "))
+        string2_lower = list(input("input the lower indices of E E(a,b,c)_(e,f,g) \n(i,j..-holes; u,v...-active; a,b...-excited;)\nExample : uv\nOperator string: "))
     elif menu == '3':
         commutator = 1
-        string1 = list(raw_input("input the strings \n(i,j..-holes; u,v...-active; a,b...-excited; 1-daggered; 0-undaggered)\nExample : u1v0\nOperator 1: "))
-        string2 = list(raw_input("Operator 2: "))
+        string1 = list(input("input the strings \n(i,j..-holes; u,v...-active; a,b...-excited; 1-daggered; 0-undaggered)\nExample : u1v0\nOperator 1: "))
+        string2 = list(input("Operator 2: "))
 
 
     for index in range(0, len(string1_upper)):
@@ -145,7 +145,7 @@ def ewt():
 	if item.kind == 'ge':
 	    i.append(item)
 	    a.append(item)
-    print i, a, u
+    print(i, a, u)
 
     '''
     #this portion goes to the make_operator function called in the main mbpt2.py file :
@@ -372,6 +372,6 @@ def ewt():
         make_c.make_c(len(full), contracted, a, i, u, full, poss, f, store_for_repeat, full_pos, i_c, menu, full_con, const_con)
 
 
-    print full_con, const_con
+    print(full_con, const_con)
     #remember to return the full contracted value
 ewt();
