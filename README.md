@@ -1,5 +1,14 @@
 # Autogen
 
+<p align="left">
+	<a href="https://asthanaa.github.io/autogen/">
+		<img alt="Docs" src="https://img.shields.io/badge/docs-online-blue?logo=readthedocs&label=docs">
+	</a>
+	<a href="https://github.com/asthanaa/autogen/actions/workflows/python-package.yml">
+		<img alt="CI" src="https://github.com/asthanaa/autogen/actions/workflows/python-package.yml/badge.svg?branch=master">
+	</a>
+</p>
+
 Autogen is an automatic expression generator for second-quantized many-body expressions using Wick’s theorem, aimed at quantum chemistry derivations (including UCC-style algebra).
 
 Most documentation lives in [docs/index.md](docs/index.md).
