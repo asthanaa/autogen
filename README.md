@@ -27,6 +27,18 @@ pip install autogen-wick
 Project name on PyPI: **autogen-wick**
 Python import: `import autogen`
 
+Optional: install PySCF (needed for generated integral/einsum scripts):
+
+```bash
+pip install pyscf
+```
+
+Or with conda:
+
+```bash
+conda install -c conda-forge pyscf
+```
+
 Or use the conda environment for development:
 
 ```bash

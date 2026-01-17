@@ -16,6 +16,7 @@ build/
 latex_output.txt
 latex_terms.txt
 out_test
+generated_code/
 
 # MkDocs build output
 site/

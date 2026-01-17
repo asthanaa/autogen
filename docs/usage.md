@@ -31,3 +31,18 @@ contracted = full_terms(terms)
 - `python debug.py`
 
 This uses the implementation in `autogen.debug` and writes to `latex_output.txt` by default.
+
+### Generated einsum scripts
+
+The generated einsum examples (e.g., under `generated_code/`) rely on PySCF for
+integrals. Install it before running those scripts:
+
+```bash
+pip install pyscf
+```
+
+Or with conda:
+
+```bash
+conda install -c conda-forge pyscf
+```

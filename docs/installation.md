@@ -14,6 +14,17 @@ This will install the package and all dependencies. You can then use it in Pytho
 import autogen
 ```
 
+Optional: install PySCF if you want to run the generated integral/einsum scripts:
+
+```bash
+pip install pyscf
+```
+
+Or with conda:
+
+```bash
+conda install -c conda-forge pyscf
+```
 
 ## Recommended: conda environment
 
