@@ -1,5 +1,20 @@
 # Installation
 
+## Quick install (PyPI)
+
+To install the latest release directly from PyPI:
+
+```bash
+pip install autogen-wick
+```
+
+This will install the package and all dependencies. You can then use it in Python:
+
+```python
+import autogen
+```
+
+
 ## Recommended: conda environment
 
 From the repo root:
