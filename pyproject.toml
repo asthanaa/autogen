@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autogen-wick"
-version = "0.1.0"
+version = "0.1.1"
 description = "Automatic Wick's theorem expression generator for quantum chemistry (unitary coupled cluster, CC, etc)."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -37,4 +37,18 @@ where = ["src"]
 include = ["autogen*"]
 
 [tool.setuptools.exclude-package-data]
-"*" = ["backup/**", "tests/**", "**/__pycache__/**"]
+"*" = [
+	"backup/**",
+	"tests/**",
+	"**/__pycache__/**",
+	"backup/debug_files/**",
+	"backup/library_activeorb/**",
+	"backup/ucc_terms/**",
+	"backup/uccsd_terms/**",
+	"backup/*.py",
+	"backup/**/*.py",
+	"backup/**/*.txt",
+	"backup/**/*.pdf",
+	"backup/**/*.docx",
+	"backup/**/*.bak"
+]
