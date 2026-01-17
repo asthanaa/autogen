@@ -1,6 +1,6 @@
-from main_tools import driv3 as driv2
-from main_tools import product as pd
-from library import print_terms 
+from autogen.main_tools import driv3 as driv2
+from autogen.main_tools import product as pd
+from autogen.library import print_terms 
 def amplitude():
 
 

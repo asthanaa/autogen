@@ -1,7 +1,7 @@
 import copy
 import class_term
 import functions
-from pkg import parity
+from autogen.pkg import parity
 class ind(object):
     def __init__(self, name, seen, parent):
         self.name = name

@@ -1,10 +1,10 @@
-from main_tools import product as math
-from library import convert_pqr  
-from  main_tools.commutator import comm
-from library import pick
-from library import print_terms
-from library import rn_comm
-from tests.debugcases import general_term 
+from autogen.main_tools import product as math
+from autogen.library import convert_pqr
+from autogen.main_tools.commutator import comm
+from autogen.library import pick
+from autogen.library import print_terms
+from autogen.library import rn_comm
+from autogen.debug import general_term
 #comm(['V2'],['T2'],1)
 #list_terms=comm(comm(['V2'],['T2'],0),['T1'],1)
 #list_terms=comm(['V2'],['T2'],1)

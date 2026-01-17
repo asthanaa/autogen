@@ -1,7 +1,7 @@
 #from tests import ccsd_amplitude as ccsd
-from main_tools.commutator import comm
-from library import print_terms
-from library import full_con
+from autogen.main_tools.commutator import comm
+from autogen.library import print_terms
+from autogen.library import full_con
 
 #the input of the commutator function is as follows :
 #if you want a commutator [V,T2]-> comm['op1'],['op2'],prefactor)

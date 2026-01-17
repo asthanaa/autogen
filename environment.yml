@@ -1,0 +1,12 @@
+name: autogen
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - python-build
+  - pip
+  - pip:
+      - -e .
+      - pytest>=7

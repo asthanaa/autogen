@@ -5,3 +5,14 @@ tec.txt
 comm_copy_4Feb.py
 .DS_Store
 *.swp
+
+# Packaging artifacts
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Local debug outputs
+latex_output.txt
+latex_terms.txt
+out_test

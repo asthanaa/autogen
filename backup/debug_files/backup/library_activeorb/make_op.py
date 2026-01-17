@@ -1,4 +1,4 @@
-from pkg import func_ewt 
+from autogen.pkg import func_ewt 
 from . import class_large_operator as class1
 from .next_op import next_op
 def count_list(dict_ind):

@@ -1,8 +1,8 @@
-from main_tools import driv3 as driv2
-import main_tools.product as prod
-import main_tools.commutator as comm
-from library import print_terms 
-from library import full_con
+from autogen.main_tools import driv3 as driv2
+import autogen.main_tools.product as prod
+import autogen.main_tools.commutator as comm
+from autogen.library import print_terms 
+from autogen.library import full_con
 #This is a test function which generates all the CCSD amplitude terms. 
 #It tests the accuracy of comm and prod functions without including Deexcitations. 
 def amplitude():

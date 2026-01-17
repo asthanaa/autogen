@@ -1,4 +1,12 @@
-from tests import ccsd_amplitude as ccsd
-from main_tools import commutator as c
-ccsd.amplitude()
-#c.comm(['V2'],['T2'],0,1)
+import os
+
+import pytest
+
+from . import ccsd_amplitude as ccsd
+
+
+@pytest.mark.slow
+def test_ccsd_amplitude_generation():
+	if os.environ.get("RUN_SLOW", "0") != "1":
+		pytest.skip("Set RUN_SLOW=1 to run CCSD amplitude generation")
+	ccsd.amplitude()

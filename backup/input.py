@@ -1,14 +1,14 @@
 from tests import ccsd_amplitude as ccsd
-from main_tools.commutator import comm
-from main_tools.driv3 import driver
-from main_tools.product import prod
-from library import print_terms
-from library import full_con
-from library import pick
-from library import convert_pqr
-from library import compare_overall2 as ce1
-from library import compare_overall as ce
-from library import h_third as ht
+from autogen.main_tools.commutator import comm
+from autogen.main_tools.driv3 import driver
+from autogen.main_tools.product import prod
+from autogen.library import print_terms
+from autogen.library import full_con
+from autogen.library import pick
+from autogen.library import convert_pqr
+from autogen.library import compare_overall2 as ce1
+from autogen.library import compare_overall as ce
+from autogen.library import h_third as ht
 print('case of ')
 list_terms=[]
 
