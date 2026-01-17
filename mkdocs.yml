@@ -1,0 +1,19 @@
+site_name: Autogen
+site_description: Automatic expression generator using Wick’s theorem.
+repo_url: https://github.com/asthanaa/autogen
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Concepts: concepts.md
+  - API: api.md
+  - Input/Output: io.md
+  - Testing: testing.md
