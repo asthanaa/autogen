@@ -4,7 +4,19 @@ Autogen is an automatic expression generator for second-quantized many-body expr
 
 Most documentation lives in [docs/index.md](docs/index.md).
 
-## Quickstart (conda)
+
+## Installation
+
+Install from PyPI:
+
+```bash
+pip install autogen-wick
+```
+
+Project name on PyPI: **autogen-wick**
+Python import: `import autogen`
+
+Or use the conda environment for development:
 
 ```bash
 conda env create -f environment.yml
