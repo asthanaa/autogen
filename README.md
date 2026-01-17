@@ -1,4 +1,13 @@
+
 # Autogen
+
+<!-- Badges -->
+<p align="left">
+	<a href="https://pypi.org/project/autogen-wick/"><img alt="PyPI" src="https://img.shields.io/pypi/v/autogen-wick.svg"></a>
+	<a href="https://pypi.org/project/autogen-wick/"><img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/autogen-wick.svg"></a>
+	<a href="https://github.com/ayushasthana/autogen/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ayushasthana/autogen"></a>
+	<a href="https://github.com/ayushasthana/autogen/actions"><img alt="CI" src="https://github.com/ayushasthana/autogen/actions/workflows/python-package.yml/badge.svg"></a>
+</p>
 
 Autogen is an automatic expression generator for second-quantized many-body expressions using Wick’s theorem, aimed at quantum chemistry derivations (including UCC-style algebra).
 
