@@ -4,7 +4,9 @@
 #Problem incomplete : in compare level 3 : in case of T1T2VD1D2, both are not permuted together. they are separate.
 #Possible bug : in compare function line 58, the range of coeff starts from 0, 0 can be an X type operator
 #possible porblem in change_pqr->add_dict: the coeffs can be the same then ind can be added to a different operator name like V vs T1:
+# Core commutator driver: builds operator objects, contracts them, and reduces terms.
 import copy
+import os
 
 import autogen.library.print_terms as pt
 from autogen.library.print_op import print_op
@@ -19,6 +21,11 @@ import autogen.library.compare_overall as cpre_env2
 import autogen.library.special_conditions as cond
 from autogen.library.compare_test import create_matrices
 removed=0
+QUIET = os.getenv("AUTOGEN_QUIET") == "1"
+
+def _maybe_print(*args, **kwargs):
+    if not QUIET:
+        print(*args, **kwargs)
 '''
 class list_op_term:
     def __init__(self, sign,list_op):
@@ -36,10 +43,11 @@ def comm(a,b,last):
     fc=1.0
     #print a,b
     #develop dict_ind
+    # Normalize inputs into operator objects, then contract.
     if a and b:
-        print('there are contractions in this commutator')
+        _maybe_print('there are contractions in this commutator')
     else:
-        print('there are no contractions in this commutator')
+        _maybe_print('there are no contractions in this commutator')
         return []
     if type(a[0])==str and type(b[0])==str:
         dict_add={}
@@ -86,7 +94,7 @@ def comm(a,b,last):
             #lib.print_op.print_op(item.st,item.co)
     '''
 
-    print('doing contraction through multi_cont')
+    _maybe_print('doing contraction through multi_cont')
     for t1 in a:
         for t2 in b:
             stt,cot=multi_cont.multi_cont(t1.st,t2.st,t1.co,t2.co)

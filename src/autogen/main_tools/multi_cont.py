@@ -4,6 +4,7 @@ import copy
 import autogen.library.make_op as make_op
 import autogen.library.print_op as p_op
 import autogen.library.full_con as full_con
+# Multi-operator contraction engine used by commutator/product flows.
 '''
 Problems :
     1. the fully uncontrancted expression has wrong ordering in the lower half.
@@ -41,7 +42,7 @@ def arrange(st, co, new_term_half, new_const_half):
     tmp_term=[]
     #print 'in arrange', st, new_term_half
     for term, pre in zip(st, co):
-        tmp_term = copy.deepcopy(new_term_half)
+        tmp_term = list(new_term_half)
         tmp_term.extend(term)
         tmp_const=sp_multi(pre,new_const_half)
         #print tmp_const
@@ -49,8 +50,43 @@ def arrange(st, co, new_term_half, new_const_half):
         const.append(tmp_const)
     #print "after arrange",terms, const
     return terms, const
+
+
+def _op_name(obj):
+    return obj.name if hasattr(obj, "name") else str(obj)
+
+
+def _term_key(term):
+    key=[]
+    for op in term:
+        upper = tuple(_op_name(item) for item in getattr(op, "upper", []))
+        lower = tuple(_op_name(item) for item in getattr(op, "lower", []))
+        key.append((op.kind, upper, lower))
+    return tuple(key)
+
+
+def _dedup_terms(terms, consts):
+    index = {}
+    out_terms = []
+    out_consts = []
+    for term, const in zip(terms, consts):
+        key = _term_key(term)
+        if key in index:
+            idx = index[key]
+            if len(out_consts[idx]) == len(const):
+                out_consts[idx] = [a + b for a, b in zip(out_consts[idx], const)]
+            else:
+                out_terms.append(term)
+                out_consts.append(const)
+                index[key] = len(out_terms) - 1
+        else:
+            index[key] = len(out_terms)
+            out_terms.append(term)
+            out_consts.append(const)
+    return out_terms, out_consts
 #assumption : last part of a tern is the working 'op'. 'op' cannot be before any 'de'
 def multi_cont(st1, st2, const1, const2):
+    # Combine two operator strings and enumerate all contraction patterns.
     flag2=0
     final_terms=[]
     final_const=[]
@@ -79,7 +115,7 @@ def multi_cont(st1, st2, const1, const2):
                 else :
                     print(" there is a case in multi_cont file I am missing")
             flag2=0
-    return final_terms, final_const
+    return _dedup_terms(final_terms, final_const)
 '''
 a,b = multi_cont(X.st, V.st, X.co, V.co)
 p_op.print_op(a,b)

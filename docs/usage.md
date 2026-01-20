@@ -39,6 +39,8 @@ When reducing equivalent terms, the compare layer supports an opt-in mode switch
 - `AUTOGEN_COMPARE_MODE=fast` (default) uses faster comparison paths when safe.
 - `AUTOGEN_COMPARE_MODE=full` forces the original compare logic.
 - `AUTOGEN_COMPARE_MODE=check` runs both and warns on any mismatch.
+- `AUTOGEN_QUIET=1` suppresses verbose term/contraction prints.
+- `AUTOGEN_CACHE=0` disables contraction prefix caching (debug only).
 
 Example:
 

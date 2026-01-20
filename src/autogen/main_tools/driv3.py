@@ -6,6 +6,8 @@
 #note 6 : term.mapping() stores names of Large op in map_org and build_map_org stores operators
 #immediate task : X1 T1 etc are not in one go so a i etc are threr twice. change that just pass dict
 # Driver-style workflow: build operators, contract all, then merge terms.
+import os
+
 from . import multi_cont
 import autogen.library as lib
 import autogen.library.change_terms as ct
@@ -13,19 +15,53 @@ import autogen.library.print_terms as pt
 import autogen.library.compare_utils as compare_utils
 from autogen.library.compare_test import create_matrices
 
-def driver(fc,list_char_op):
+CACHE_ENABLED = os.getenv("AUTOGEN_CACHE", "1") != "0"
+QUIET = os.getenv("AUTOGEN_QUIET") == "1"
+_CONTRACTION_CACHE = {}
+
+def _maybe_print(*args, **kwargs):
+    if not QUIET:
+        print(*args, **kwargs)
+
+def _find_cached_prefix(ops):
+    for idx in range(len(ops), 0, -1):
+        key = ops[:idx]
+        cached = _CONTRACTION_CACHE.get(key)
+        if cached is not None:
+            return idx, cached
+    return 0, None
+
+def driver(fc,list_char_op, quiet=None):
 #def driver(fc):
     #build operators
     #list_char_op=['D2','V2','Y2']
+    if quiet is None:
+        quiet = QUIET
     dict_ind={}
     lou, dict_ind=lib.make_op.make_op(list_char_op, dict_ind)
     #Do contractions
     # Iteratively contract each operator string.
-    a=lou[0].st
-    b=lou[0].co
+    ops = tuple(list_char_op)
+    if CACHE_ENABLED:
+        cached_len, cached = _find_cached_prefix(ops)
+    else:
+        cached_len, cached = 0, None
+    if cached is None:
+        a=lou[0].st
+        b=lou[0].co
+        start_idx = 1
+        if CACHE_ENABLED:
+            _CONTRACTION_CACHE[(ops[0],)] = (a, b)
+    else:
+        a, b = cached
+        start_idx = cached_len
     #lib.print_op.print_op(lou[0].st,lou[0].co)
-    for i in range(1,len(lou)):
+    for i in range(start_idx,len(lou)):
         a,b=multi_cont.multi_cont(a, lou[i].st, b, lou[i].co)
+        if CACHE_ENABLED:
+            key = ops[: i + 1]
+            if key not in _CONTRACTION_CACHE:
+                _CONTRACTION_CACHE[key] = (a, b)
         #lib.print_op.print_op(lou[i].st,lou[i].co)
 
         #lib.print_op.print_op(a,b)
@@ -47,12 +83,15 @@ def driver(fc,list_char_op):
         #condition for atleast 1 contraction with H
         term.cond_cont(dict_ind)
         term.build_map_org()
-        term.print_term()
-    print(( 'list terms full con length', len(list_terms)))
+        if not quiet:
+            term.print_term()
+    if not quiet:
+        _maybe_print(( 'list terms full con length', len(list_terms)))
     #---
     #for term in list_terms:
         #term.print_term()
-    print( '-------final below----')
+    if not quiet:
+        _maybe_print( '-------final below----')
     '''
     #integral symmetry
     for i in range(len(list_terms)):
@@ -101,5 +140,6 @@ def driver(fc,list_char_op):
             #print term.fac, term.sum_list, term.coeff_list
 
     #print terms properly
-    pt.print_terms(list_terms,'latex_output.txt')
+    if not quiet:
+        pt.print_terms(list_terms,'latex_output.txt')
 #driver(1.0)

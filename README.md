@@ -62,8 +62,12 @@ Use these package paths:
 - Compare mode (default is fast):
 	- `AUTOGEN_COMPARE_MODE=full python debug.py`
 	- `AUTOGEN_COMPARE_MODE=check python debug.py`
+- Quiet runs (suppress verbose prints):
+	- `AUTOGEN_QUIET=1 python debug.py`
 - Benchmark compare-heavy workflows:
 	- `python scripts/bench_compare.py --repeat 3 --warmup 1`
+- Disable contraction prefix caching:
+	- `AUTOGEN_CACHE=0 python debug.py`
 - Generate einsum scripts (writes to `generated_code/`):
 	- `python scripts/gen_einsum.py V2 T1 T1`
 	- `python scripts/gen_einsum.py V2 T2`

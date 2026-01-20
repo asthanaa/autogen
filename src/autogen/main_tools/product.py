@@ -4,7 +4,9 @@
 #Problem incomplete : in compare level 3 : in case of T1T2VD1D2, both are not permuted together. they are separate.
 #Possible bug : in compare function line 58, the range of coeff starts from 0, 0 can be an X type operator
 #possible porblem in change_pqr->add_dict: the coeffs can be the same then ind can be added to a different operator name like V vs T1:
+# Core product driver: builds operator objects, contracts them, and reduces terms.
 import copy
+import os
 
 import autogen.library.print_terms as pt
 from autogen.library.print_op import print_op
@@ -20,6 +22,11 @@ import autogen.library.special_conditions as cond
 import autogen.library.full_con as full_con
 from autogen.library.compare_test import create_matrices
 removed=0
+QUIET = os.getenv("AUTOGEN_QUIET") == "1"
+
+def _maybe_print(*args, **kwargs):
+    if not QUIET:
+        print(*args, **kwargs)
 #comm should accept a list of terms/Alphabet operator and list of terms/Alphabet operator.
 #1-> commutator on 2-> commutator off so only 1 term on-> whether commutator is on or it is just a product
 # last-> if its the outside last commutator or not (for taking the fully contracted terms)
@@ -29,10 +36,11 @@ def prod(a,b,last):
     fc=1.0
     #print a,b
     #develop dict_ind
+    # Normalize inputs into operator objects, then contract.
     if a and b:
-        print('there are contractions in this commutator')
+        _maybe_print('there are contractions in this commutator')
     else:
-        print('there are no contractions in this commutator')
+        _maybe_print('there are no contractions in this commutator')
         return []
     if type(a[0])==str and type(b[0])==str:
         dict_add={}
@@ -62,7 +70,7 @@ def prod(a,b,last):
     st1=[]
     co2=[]
     co1=[]
-    print('doing contraction through multi_cont')
+    _maybe_print('doing contraction through multi_cont')
     for t1 in a:
         for t2 in b:
             stt,cot=multi_cont.multi_cont(t1.st,t2.st,t1.co,t2.co)
