@@ -5,8 +5,6 @@ def compare_envelope(list_terms, fc,last):
     #compare terms based on 5 levels of check all in cpre.compare()
     #for i in range(1):
         #for j in range(1,2):
-    compare_utils.ensure_matrices_for_terms(list_terms)
-
     def merge_terms(rep, term, flo):
         #print "comparing:", rep.fac, rep.coeff_list, term.fac, term.coeff_list, flo
         #print 'in result in the comparision', i, j, flo
@@ -15,7 +13,13 @@ def compare_envelope(list_terms, fc,last):
         term.fac = 0.0
         #print 'result in compare when matched', rep.fac, term.fac, flo
 
-    compare_utils.reduce_terms(list_terms, compare_utils.fast_compare, merge_terms)
+    compare_utils.reduce_terms_two_stage(
+        list_terms,
+        compare_utils.fast_compare,
+        merge_terms,
+        key_func=compare_utils.coarse_key,
+        secondary_key_func=compare_utils.matrix_key,
+    )
 
     #muliply with the prefactor of the expression from the Housdoff Expression
     #for item in list_terms:

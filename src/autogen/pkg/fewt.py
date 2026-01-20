@@ -2,7 +2,8 @@
 
 #Thing to do here :
 #take input in the form if E and change it to the operator form.
-#send them to the required functionsfor making contractions
+# Entry-point logic for spin-free GWT expression generation (fermionic).
+# Routes operator lists through contraction and printing steps.
 
 
 
@@ -33,6 +34,7 @@ f = open("tec.txt", "w")
 
 def ewt(string1_upper, string1_lower, string2_upper, string2_lower):
     #class operator defined
+    # Build operator objects for two normal-ordered strings.
     menu=2
     string2 = []
     string1 = []
@@ -208,7 +210,7 @@ def ewt(string1_upper, string1_lower, string2_upper, string2_lower):
     for i_c in range(commutator+1):
         full = []
         full_pos = []
-        store_for_repeat = []
+        store_for_repeat = set()
         poss= deque([])
         y = deque([])
         if not i_c:
@@ -352,7 +354,7 @@ def ewt(string1_upper, string1_lower, string2_upper, string2_lower):
                 tmp_l.append("Doing : Normal ordering of String\\\\")
             else :
                 tmp_l.append("Doing : Commutator expression Generation\\\\")
-            tmp_l.append('Here are the operator strings : \[E^{')
+            tmp_l.append('Here are the operator strings : \\[E^{')
 
             for item in full1:
                 if item.dag=='1':
@@ -381,7 +383,7 @@ def ewt(string1_upper, string1_lower, string2_upper, string2_lower):
                 tmp_l=tmp_l+tmp_lower
                 tmp_lower=[]
                 tmp_l.append('}')
-            tmp_l.append('\]')
+            tmp_l.append('\\]')
             tmp_6 = "Equation : "+''.join(tmp_l)+'\\\\'+'\n'+"Answer :\n"
             f.write(tmp_6)
         if not i_c and commutator:
@@ -396,4 +398,3 @@ def ewt(string1_upper, string1_lower, string2_upper, string2_lower):
 
     return full_con, const_con
     #remember to return the full contracted value
-

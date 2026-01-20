@@ -13,6 +13,8 @@ This `docs/` folder is the main documentation. The root README is intentionally 
 - API guide: [api.md](api.md)
 - Input/output: [io.md](io.md)
 - Testing: [testing.md](testing.md)
+- Performance: [performance.md](performance.md)
+- Work log: [work_log.md](work_log.md)
 
 ## Imports
 

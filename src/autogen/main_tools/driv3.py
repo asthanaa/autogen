@@ -13,7 +13,6 @@ import autogen.library as lib
 import autogen.library.change_terms as ct
 import autogen.library.print_terms as pt
 import autogen.library.compare_utils as compare_utils
-from autogen.library.compare_test import create_matrices
 
 CACHE_ENABLED = os.getenv("AUTOGEN_CACHE", "1") != "0"
 QUIET = os.getenv("AUTOGEN_QUIET") == "1"
@@ -115,17 +114,19 @@ def driver(fc,list_char_op, quiet=None):
                 list_terms[i].dummy_check(list_terms[j])
 
     '''
-    #compare terms based on 5 levels of check all in cpre.compare()
-    for term in list_terms:
-        create_matrices(term)
-
     def merge_terms(rep, term, flo):
         #print 'in result in the comparision', i, j, flo
         #print 'this should be 0 always = ', rep.fac + term.fac * flo
         rep.fac = rep.fac + term.fac * flo
         term.fac = 0.0
 
-    compare_utils.reduce_terms(list_terms, compare_utils.fast_compare, merge_terms)
+    compare_utils.reduce_terms_two_stage(
+        list_terms,
+        compare_utils.fast_compare,
+        merge_terms,
+        key_func=compare_utils.coarse_key,
+        secondary_key_func=compare_utils.matrix_key,
+    )
 
     #muliply with the prefactor of the expression from the Housdoff Expression(No need to do this now)
     #for item in list_terms:

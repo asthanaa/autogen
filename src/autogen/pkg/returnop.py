@@ -1,10 +1,13 @@
 from . import func_ewt
 
+# Build LaTeX operator strings with dagger ordering.
+
 def returnop2(full_con_term, output, new_list):
     new_list.append('\\{E^{')
     up=[]
     down=[]
     new_output=[] #based on the formalism that dagger comes before undaggered
+    # Collect creation operators before annihilation for LaTeX ordering.
     for item in output:
         if item.dag=='1' and item.string==1:
             tmp_4 = item

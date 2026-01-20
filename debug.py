@@ -14,6 +14,14 @@ Notes:
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+if SRC.exists() and str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
 from autogen.library.full_con import full_terms
 from autogen.library.print_terms import print_terms
 from autogen.main_tools.commutator import comm

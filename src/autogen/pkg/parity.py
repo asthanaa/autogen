@@ -1,3 +1,14 @@
+from functools import lru_cache
+
+
+@lru_cache(maxsize=128)
+def _index_map(A_tuple):
+    A_indices = dict(list(zip(A_tuple, list(range(len(A_tuple))))))
+    if len(A_indices) != len(A_tuple):
+        raise ValueError("A contains duplicate values")
+    return A_indices
+
+
 def parity(A,B):
     """Relative parity between two lists
 
@@ -33,9 +44,7 @@ Examples
     if len(A) != len(B): raise ValueError("B is not a permutation of A")
 
     # represent each element in B with its index in A and run permutation_parity()
-    A_indices = dict(list(zip(A,list(range(len(A))))))
-
-    if len(A_indices) != len(A): raise ValueError("A contains duplicate values")
+    A_indices = _index_map(tuple(A))
 
     try:
         perm   = [A_indices[x] for x in B]
@@ -91,17 +100,14 @@ Examples
     # Decompose into disjoint cycles. We only need to
     # count the number of cycles to determine the parity
     num_cycles = 0
-    seen = set()
+    seen = [False] * n
     for i in range(n):
-        if i in seen:
+        if seen[i]:
             continue
         num_cycles += 1
         j = i
-        while True:
-            assert j not in seen
-            seen.add(j)
+        while not seen[j]:
+            seen[j] = True
             j = perm[j]
-            if j == i:
-                break
 
     return (n - num_cycles) % 2

@@ -41,6 +41,14 @@ When reducing equivalent terms, the compare layer supports an opt-in mode switch
 - `AUTOGEN_COMPARE_MODE=check` runs both and warns on any mismatch.
 - `AUTOGEN_QUIET=1` suppresses verbose term/contraction prints.
 - `AUTOGEN_CACHE=0` disables contraction prefix caching (debug only).
+- `AUTOGEN_MULTI_CONT_CACHE=0` disables multi-operator contraction caching.
+- `AUTOGEN_MULTI_CONT_CACHE_SIZE=256` sets the multi-operator cache size (LRU).
+- `AUTOGEN_SPIN_SUMMED=1` enables spin-summed coefficients for spatial-orbital integrals (default).
+- `AUTOGEN_MATCHING_CACHE=0` disables pattern-level contraction match caching in `make_c`.
+- `AUTOGEN_MATCHING_CACHE_SIZE=128` sets the pattern cache size (LRU).
+- `AUTOGEN_NUMBA=1` enables Numba-based contraction enumeration (optional).
+- `AUTOGEN_NUMBA_CANDS_CACHE=0` disables caching of typed candidate lists for Numba.
+- `AUTOGEN_NUMBA_CANDS_CACHE_SIZE=64` sets the typed-candidate cache size (LRU).
 
 Example:
 

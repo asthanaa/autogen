@@ -64,10 +64,26 @@ Use these package paths:
 	- `AUTOGEN_COMPARE_MODE=check python debug.py`
 - Quiet runs (suppress verbose prints):
 	- `AUTOGEN_QUIET=1 python debug.py`
+- Spin-summed coefficients for spatial-orbital integrals (default on):
+	- `AUTOGEN_SPIN_SUMMED=1 python debug.py`
 - Benchmark compare-heavy workflows:
 	- `python scripts/bench_compare.py --repeat 3 --warmup 1`
 - Disable contraction prefix caching:
 	- `AUTOGEN_CACHE=0 python debug.py`
+- Disable multi-operator contraction caching:
+	- `AUTOGEN_MULTI_CONT_CACHE=0 python debug.py`
+- Resize multi-operator contraction cache (LRU, default 256):
+	- `AUTOGEN_MULTI_CONT_CACHE_SIZE=512 python debug.py`
+- Disable pattern-level contraction match caching:
+	- `AUTOGEN_MATCHING_CACHE=0 python debug.py`
+- Resize pattern-level match cache (LRU, default 128):
+	- `AUTOGEN_MATCHING_CACHE_SIZE=256 python debug.py`
+- Enable Numba-based contraction enumeration (optional, requires numba):
+	- `AUTOGEN_NUMBA=1 python debug.py`
+- Disable caching of typed candidate lists for Numba:
+	- `AUTOGEN_NUMBA_CANDS_CACHE=0 python debug.py`
+- Resize typed candidate cache (LRU, default 64):
+	- `AUTOGEN_NUMBA_CANDS_CACHE_SIZE=128 python debug.py`
 - Generate einsum scripts (writes to `generated_code/`):
 	- `python scripts/gen_einsum.py V2 T1 T1`
 	- `python scripts/gen_einsum.py V2 T2`

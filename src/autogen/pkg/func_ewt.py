@@ -1,7 +1,10 @@
 import copy
 from collections import deque
 
+# Core data structures and helpers for building contracted operator strings.
+
 class operator(object):
+    # Atomic operator node used when building contraction strings.
     def __init__(self, kind, dag, pos, name, st, pair, spin):
         self.kind = kind
         self.dag = dag

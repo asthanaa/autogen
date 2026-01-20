@@ -17,3 +17,5 @@ nav:
   - API: api.md
   - Input/Output: io.md
   - Testing: testing.md
+  - Performance: performance.md
+  - Work log: work_log.md

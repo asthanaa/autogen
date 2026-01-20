@@ -19,7 +19,6 @@ from . import multi_cont
 import autogen.library.compare_envelope as cpre_env
 import autogen.library.compare_overall as cpre_env2
 import autogen.library.special_conditions as cond
-from autogen.library.compare_test import create_matrices
 removed=0
 QUIET = os.getenv("AUTOGEN_QUIET") == "1"
 
@@ -208,8 +207,6 @@ def comm(a,b,last):
         list_terms=cond.startequiv_cond(list_terms)
 
 
-    for term in list_terms:
-            create_matrices(term)
     cpre_env2.compare_envelope(list_terms, fc, last)    
     list_terms=pt.clean_list(list_terms)
 

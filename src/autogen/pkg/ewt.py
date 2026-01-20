@@ -2,7 +2,8 @@
 
 #Thing to do here :
 #take input in the form if E and change it to the operator form.
-#send them to the required functionsfor making contractions
+# Entry-point logic for spin-free GWT expression generation.
+# Sends operator lists to contraction routines and prints LaTeX output.
 
 
 
@@ -36,6 +37,7 @@ def ewt():
 
     string2 = []
     string1 = []
+    # Collect raw operator strings from the menu-driven interface.
     #class operator(object):
         #def __init__(self, kind, dag, pos, name, st, pair, spin):
             #self.kind = kind

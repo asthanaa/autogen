@@ -57,6 +57,103 @@ def term_signature(term):
     return (len(coeff_list), st_len, tuple(op_types), tuple(coeff_shapes))
 
 
+def _op_label(map_org, idx):
+    if idx >= len(map_org):
+        return "E0"
+    name = getattr(map_org[idx], "name", "")
+    return name[:2]
+
+
+def _index_kind(term, name):
+    if term.isa(name):
+        return "a"
+    if term.isi(name):
+        return "i"
+    if term.isp(name):
+        return "p"
+    return "x"
+
+
+def index_incidence_signature(term):
+    # Encode how indices connect operators, ignoring dummy names.
+    map_org = getattr(term, "map_org", [])
+    coeff_list = getattr(term, "coeff_list", [])
+    sum_set = set(getattr(term, "sum_list", []))
+    index_map = {}
+    for idx, coeff in enumerate(coeff_list):
+        op_label = _op_label(map_org, idx)
+        for name in coeff:
+            info = index_map.get(name)
+            if info is None:
+                info = {
+                    "dummy": name in sum_set,
+                    "kind": _index_kind(term, name),
+                    "ops": {},
+                }
+                index_map[name] = info
+            ops = info["ops"]
+            ops[op_label] = ops.get(op_label, 0) + 1
+    signatures = []
+    for name, info in index_map.items():
+        name_key = None if info["dummy"] else name
+        ops = tuple(sorted(info["ops"].items()))
+        signatures.append((info["kind"], info["dummy"], name_key, ops))
+    signatures.sort()
+    return tuple(signatures)
+
+
+def _index_descriptors(term):
+    map_org = getattr(term, "map_org", [])
+    coeff_list = getattr(term, "coeff_list", [])
+    sum_set = set(getattr(term, "sum_list", []))
+    index_map = {}
+    for idx, coeff in enumerate(coeff_list):
+        op_label = _op_label(map_org, idx)
+        for name in coeff:
+            info = index_map.get(name)
+            if info is None:
+                info = {
+                    "dummy": name in sum_set,
+                    "kind": _index_kind(term, name),
+                    "ops": {},
+                }
+                index_map[name] = info
+            ops = info["ops"]
+            ops[op_label] = ops.get(op_label, 0) + 1
+    return index_map
+
+
+def structural_key(term):
+    index_map = _index_descriptors(term)
+    descriptors = {}
+    for name, info in index_map.items():
+        name_key = None if info["dummy"] else name
+        ops = tuple(sorted(info["ops"].items()))
+        desc = (info["kind"], info["dummy"], name_key, ops)
+        descriptors[name] = desc
+    unique_desc = sorted(set(descriptors.values()))
+    desc_id = {desc: idx for idx, desc in enumerate(unique_desc)}
+
+    map_org = getattr(term, "map_org", [])
+    coeff_list = getattr(term, "coeff_list", [])
+    patterns = []
+    for idx, coeff in enumerate(coeff_list):
+        op_label = _op_label(map_org, idx)
+        ids = [desc_id[descriptors[name]] for name in coeff]
+        ids.sort()
+        patterns.append((op_label, tuple(ids)))
+    patterns.sort()
+    return tuple(patterns)
+
+
+def coarse_key(term):
+    return (term_signature(term), index_incidence_signature(term), structural_key(term))
+
+
+def matrix_key(term):
+    return (coarse_key(term), matrix_signature(term))
+
+
 def bucket_terms(list_terms):
     buckets = {}
     for idx, term in enumerate(list_terms):
@@ -77,6 +174,19 @@ def ensure_matrices_for_terms(list_terms):
     except Exception:
         return
     for term in list_terms:
+        if term.fac == 0:
+            continue
+        if _needs_matrix(term):
+            create_matrices(term)
+
+
+def ensure_matrices_for_indices(list_terms, indices):
+    try:
+        from .compare_test import create_matrices
+    except Exception:
+        return
+    for idx in indices:
+        term = list_terms[idx]
         if term.fac == 0:
             continue
         if _needs_matrix(term):
@@ -196,6 +306,18 @@ def fast_compare(term1, term2):
 
 
 def reduce_terms(list_terms, compare_func, merge_func, key_func=canonical_key):
+    return reduce_terms_two_stage(
+        list_terms,
+        compare_func,
+        merge_func,
+        key_func=key_func,
+        secondary_key_func=None,
+    )
+
+
+def reduce_terms_two_stage(
+    list_terms, compare_func, merge_func, key_func, secondary_key_func
+):
     stats = _compare_stats
     start_time = time.perf_counter() if stats is not None else None
     buckets = {}
@@ -203,26 +325,46 @@ def reduce_terms(list_terms, compare_func, merge_func, key_func=canonical_key):
         if term.fac == 0:
             continue
         key = key_func(term)
-        reps = buckets.get(key)
-        if reps is None:
-            buckets[key] = [idx]
-            continue
-        merged = False
-        for rep_idx in reps:
-            rep = list_terms[rep_idx]
-            if rep.fac == 0:
+        buckets.setdefault(key, []).append(idx)
+
+    if secondary_key_func is not None:
+        refined = {}
+        for key, indices in buckets.items():
+            if len(indices) <= 1:
+                refined[(key, None)] = indices
                 continue
-            if stats is not None:
-                stats.compare_calls += 1
-            flo = compare_func(rep, term)
-            if flo != 0:
+            ensure_matrices_for_indices(list_terms, indices)
+            for idx in indices:
+                term = list_terms[idx]
+                if term.fac == 0:
+                    continue
+                key2 = secondary_key_func(term)
+                refined.setdefault(key2, []).append(idx)
+        buckets = refined
+
+    for indices in buckets.values():
+        reps = []
+        for idx in indices:
+            term = list_terms[idx]
+            if term.fac == 0:
+                continue
+            merged = False
+            for rep_idx in reps:
+                rep = list_terms[rep_idx]
+                if rep.fac == 0:
+                    continue
                 if stats is not None:
-                    stats.merges += 1
-                merge_func(rep, term, flo)
-                merged = True
-                break
-        if not merged:
-            reps.append(idx)
+                    stats.compare_calls += 1
+                flo = compare_func(rep, term)
+                if flo != 0:
+                    if stats is not None:
+                        stats.merges += 1
+                    merge_func(rep, term, flo)
+                    merged = True
+                    break
+            if not merged:
+                reps.append(idx)
+
     if stats is not None:
         bucket_sizes = [len(items) for items in buckets.values()]
         stats.buckets += len(bucket_sizes)

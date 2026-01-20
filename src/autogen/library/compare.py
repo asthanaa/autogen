@@ -1,5 +1,4 @@
 import copy
-from . import class_term
 from . import functions
 from autogen.pkg import parity
 class ind(object):
@@ -8,6 +7,37 @@ class ind(object):
         self.seen=seen
         self.parent=parent
         self.pair=self
+
+
+class _CoeffTerm(object):
+    __slots__ = ("coeff_list", "fac", "_juggle_cache")
+
+    def __init__(self, coeff_list, fac):
+        self.coeff_list = coeff_list
+        self.fac = fac
+        self._juggle_cache = None
+
+
+def _build_coeff_ind(term, map_org, cache_attr):
+    cached = getattr(term, cache_attr, None)
+    if cached is not None:
+        return cached
+    coeff = []
+    for c1, coeff_list in enumerate(term.coeff_list):
+        if c1 == len(map_org):
+            parent = "E"
+        else:
+            parent = map_org[c1].name
+        coeff.append([ind(i1, 0, parent) for i1 in coeff_list])
+    # Pair indices within each coefficient list.
+    for c1 in coeff:
+        for ij in range(len(c1)):
+            if ij < len(c1) // 2:
+                c1[ij].pair = c1[ij + len(c1) // 2]
+            else:
+                c1[ij].pair = c1[ij - len(c1) // 2]
+    setattr(term, cache_attr, coeff)
+    return coeff
 
 
 def unsee(coeff):
@@ -132,23 +162,22 @@ def juggle(term,pos):
             functions.permute(item,3,5, possible_coeff)
         #print 'test that all permutations are created of operators',possible_coeff
         #sys.exit(0)
-    tmp_term=copy.deepcopy(term)
     ret_terms=[]
     #create the sign of each term using parity function
     for c1 in possible_coeff:
-        tmp_term.fac=term.fac #reinitialize
-        tmp_term.coeff_list[pos]=c1
+        coeff_list = list(term.coeff_list)
+        coeff_list[pos] = c1
         '''
         if i%2==0:
             tmp_term.fac=term.fac*-1
         '''
         if parity.parity(c1,term.coeff_list[pos])==1:
-            tmp_term.fac=term.fac*-1
+            fac=term.fac*-1
         else :
-            tmp_term.fac=term.fac
+            fac=term.fac
         #print 'check the sign of terms in juggle', c1,term.coeff_list[pos], parity.parity(c1,term.coeff_list[pos]),"(",tmp_term.fac,term.fac,")"
 
-        ret_terms.append(copy.deepcopy(tmp_term))
+        ret_terms.append(_CoeffTerm(coeff_list, fac))
     #print ' length og list terms after juggle is :', len(ret_terms)
 
     cache[pos] = ret_terms
@@ -259,8 +288,7 @@ def level3(term1,term2):
 
         if len(term2.coeff_list)!=len(term2.map_org):
            tmp_term.append(term2.coeff_list[-1])#adding the operator coeff----
-        x=class_term.term(+1,copy.deepcopy(term2.sum_list), tmp_term, copy.deepcopy(term2.large_op_list),copy.deepcopy(term2.st),copy.deepcopy(term2.co))
-        final_terms.append(x)
+        final_terms.append(_CoeffTerm(list(tmp_term), 1.0))
     permute=[]
     ret=[]
     #print term2.coeff_list
@@ -286,8 +314,7 @@ def level3(term1,term2):
         if len(term2.coeff_list)!=len(term2.map_org):
             tmp_term.append(term2.coeff_list[-1])#adding the operator coeff----
 
-        x=class_term.term(+1,copy.deepcopy(term2.sum_list), tmp_term, copy.deepcopy(term2.large_op_list),copy.deepcopy(term2.st),copy.deepcopy(term2.co))
-        final_terms.append(x)
+        final_terms.append(_CoeffTerm(list(tmp_term), 1.0))
 
     term2._level3_variants = final_terms
     return 1, list(final_terms)
@@ -301,8 +328,8 @@ def level4(term1, term2, final_terms):
     #produce all possibilities of each element coeffcient
     tmp_terms1=[]
     positions = []
-    for c2 in range(len(term1.coeff_list)):
-        if len(term1.coeff_list[c2]) >= 4:
+    for c2 in range(len(term2.coeff_list)):
+        if len(term2.coeff_list[c2]) >= 4:
             positions.append(c2)
     if not positions:
         return
@@ -417,60 +444,26 @@ def level5(term1, term2, final_terms):
     #create indices class objects for each indices in operator such as 'a' in T1(a,k)
     #pair the coefficients to their partners in the indices class of all terms (main terms and copies of term2)
     #arrowwork decides if the two terms are the same and the sign is given by the fac of the term2 copy.
-    tmp1=[]
-    tmp2=[]
-    #build class ind
-    for c1 in range(len(term1.coeff_list)):
-        for i1 in term1.coeff_list[c1]:
-            if c1==len(term1.map_org):#case when the operator E coeff come up
-                x1=ind(i1,0,'E')
-                tmp1.append(copy.deepcopy(x1))
-            else:
-                x1=ind(i1,0,term1.map_org[c1].name)
-                tmp1.append(copy.deepcopy(x1))
-
-        tmp2.append(copy.deepcopy(tmp1))
-
-        tmp1=[]
-    coeff1=copy.deepcopy(tmp2)
-    tmp2=[]
-    term2_coeffs=[]
-    final_coeffs=[]
+    coeff1 = _build_coeff_ind(term1, term1.map_org, "_coeff_ind_cache")
+    final_coeffs = []
     #print '---------------------coeff1 length', len(coeff1)
     #build class ind for term2 in final terms
     for termx in final_terms:
-        tmp2=[]
-        for c2 in range(len(termx.coeff_list)):
-            tmp1=[]
-            for i2 in termx.coeff_list[c2]:
-                if c2==len(term2.map_org):
-                    x2=ind(i2,0,'E')
-                    tmp1.append(copy.deepcopy(x2))
-                else:
-                    #print len(term2.map_org),c2, termx.coeff_list
-                    x2=ind(i2,0,term2.map_org[c2].name)
-                    tmp1.append(copy.deepcopy(x2))
-            tmp2.append(copy.deepcopy(tmp1))
-        term2_coeffs.append(copy.deepcopy(tmp2))
-    final_coeffs=copy.deepcopy(term2_coeffs)
-    #pair the pairs
-    for c1 in coeff1:
-        #for i1 in c1:
-        #    print i1.name
-        for ij in range(len(c1)):
-            if ij < len(c1)//2:
-                c1[ij].pair = c1[ij + len(c1)//2]
-            else :
-                c1[ij].pair = c1[ij - len(c1)//2]
-    for term2_coeffs in final_coeffs:
-        for c1 in term2_coeffs:
-            #for i1 in c1:
-            #    print i1.name
+        coeff2 = []
+        for c2, coeff_list in enumerate(termx.coeff_list):
+            if c2 == len(term2.map_org):
+                parent = "E"
+            else:
+                parent = term2.map_org[c2].name
+            coeff2.append([ind(i2, 0, parent) for i2 in coeff_list])
+        # Pair indices within each coefficient list.
+        for c1 in coeff2:
             for ij in range(len(c1)):
-                if ij < len(c1)//2:
-                    c1[ij].pair = c1[ij + len(c1)//2]
-                else :
-                    c1[ij].pair = c1[ij - len(c1)//2]
+                if ij < len(c1) // 2:
+                    c1[ij].pair = c1[ij + len(c1) // 2]
+                else:
+                    c1[ij].pair = c1[ij - len(c1) // 2]
+        final_coeffs.append(coeff2)
     flag=0
     '''
     for item in coeff1:
@@ -483,7 +476,7 @@ def level5(term1, term2, final_terms):
         unsee(coeff1)
         unsee(c2)
         #print 'comparing for arrow',term1.coeff_list, termx.coeff_list
-        if arrowwork(term1, termx,coeff1, c2)==1:
+        if arrowwork(term1, term2,coeff1, c2)==1:
             flag=termx.fac
             #print 'match', term1.coeff_list, '"',term2.coeff_list,',',termx.coeff_list,',',termx.fac
             break

@@ -3,11 +3,16 @@ import string
 import numpy as np
 import copy
 class term(object):
-    def __init__(self, fac, sum_list, coeff_list,lol, st, co):
+    def __init__(self, fac, sum_list, coeff_list,lol, st, co, copy_inputs=True):
         self.fac=fac
-        self.sum_list=sum_list
-        self.coeff_list=copy.deepcopy(coeff_list)
-        self.large_op_list=copy.deepcopy(lol)
+        if copy_inputs:
+            self.sum_list=list(sum_list)
+            self.coeff_list=copy.deepcopy(coeff_list)
+            self.large_op_list=copy.deepcopy(lol)
+        else:
+            self.sum_list=sum_list
+            self.coeff_list=coeff_list
+            self.large_op_list=lol
         self.st=st
         self.co=co
         self.map_org=[]
@@ -241,7 +246,7 @@ class term(object):
         #f=open('exp_out_latex.txt','a')
         f.write(str(self.fac))
         if self.sum_list:
-            f.write("\sum_{")
+            f.write(r"\sum_{")
             for item in self.sum_list:
                 f.write(item+' ')
             f.write("}")
@@ -283,8 +288,5 @@ class term(object):
     def build_map_org(self):
         for item in self.large_op_list:
             self.map_org.append(item)
-
-
-
 
 

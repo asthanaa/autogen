@@ -1,6 +1,8 @@
 import autogen.pkg.func_ewt as func_ewt
 import autogen.pkg.fewt as fewt
 import copy
+import os
+from collections import OrderedDict
 import autogen.library.make_op as make_op
 import autogen.library.print_op as p_op
 import autogen.library.full_con as full_con
@@ -56,12 +58,28 @@ def _op_name(obj):
     return obj.name if hasattr(obj, "name") else str(obj)
 
 
+def _sig_item(item):
+    if isinstance(item, str):
+        return ("s", item)
+    return (
+        "o",
+        getattr(item, "name", None),
+        getattr(item, "kind", None),
+        getattr(item, "dag", None),
+        getattr(item, "pos", None),
+        getattr(item, "string", None),
+    )
+
+
 def _term_key(term):
     key=[]
     for op in term:
-        upper = tuple(_op_name(item) for item in getattr(op, "upper", []))
-        lower = tuple(_op_name(item) for item in getattr(op, "lower", []))
-        key.append((op.kind, upper, lower))
+        upper = tuple(_sig_item(item) for item in getattr(op, "upper", []))
+        lower = tuple(_sig_item(item) for item in getattr(op, "lower", []))
+        anti = getattr(op, "anti", 0)
+        matrix = getattr(op, "matrix", None)
+        matrix_sig = tuple(matrix) if matrix else None
+        key.append((op.kind, upper, lower, anti, matrix_sig))
     return tuple(key)
 
 
@@ -84,9 +102,50 @@ def _dedup_terms(terms, consts):
             out_terms.append(term)
             out_consts.append(const)
     return out_terms, out_consts
+
+
+CACHE_ENABLED = os.getenv("AUTOGEN_MULTI_CONT_CACHE", "1") != "0"
+try:
+    CACHE_SIZE = int(os.getenv("AUTOGEN_MULTI_CONT_CACHE_SIZE", "256"))
+except ValueError:
+    CACHE_SIZE = 256
+_MULTI_CONT_CACHE = OrderedDict()
+
+
+def _const_key(consts):
+    return tuple(tuple(c) for c in consts)
+
+
+def _st_key(st):
+    return tuple(_term_key(term) for term in st)
+
+
+def _mc_key(st1, st2, const1, const2):
+    return (_st_key(st1), _const_key(const1), _st_key(st2), _const_key(const2))
+
+
+def _cache_get(key):
+    cached = _MULTI_CONT_CACHE.get(key)
+    if cached is None:
+        return None
+    _MULTI_CONT_CACHE.move_to_end(key)
+    terms, consts = cached
+    return list(terms), [list(c) for c in consts]
+
+
+def _cache_set(key, terms, consts):
+    _MULTI_CONT_CACHE[key] = (tuple(terms), tuple(tuple(c) for c in consts))
+    _MULTI_CONT_CACHE.move_to_end(key)
+    if len(_MULTI_CONT_CACHE) > CACHE_SIZE:
+        _MULTI_CONT_CACHE.popitem(last=False)
 #assumption : last part of a tern is the working 'op'. 'op' cannot be before any 'de'
 def multi_cont(st1, st2, const1, const2):
     # Combine two operator strings and enumerate all contraction patterns.
+    if CACHE_ENABLED:
+        cache_key = _mc_key(st1, st2, const1, const2)
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            return cached
     flag2=0
     final_terms=[]
     final_const=[]
@@ -115,7 +174,10 @@ def multi_cont(st1, st2, const1, const2):
                 else :
                     print(" there is a case in multi_cont file I am missing")
             flag2=0
-    return _dedup_terms(final_terms, final_const)
+    final_terms, final_const = _dedup_terms(final_terms, final_const)
+    if CACHE_ENABLED:
+        _cache_set(cache_key, final_terms, final_const)
+    return final_terms, final_const
 '''
 a,b = multi_cont(X.st, V.st, X.co, V.co)
 p_op.print_op(a,b)
