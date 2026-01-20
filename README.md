@@ -59,6 +59,17 @@ Use these package paths:
 
 - Debug workflow (writes LaTeX-ish output to `latex_output.txt` by default):
 	- `python debug.py`
+- Compare mode (default is fast):
+	- `AUTOGEN_COMPARE_MODE=full python debug.py`
+	- `AUTOGEN_COMPARE_MODE=check python debug.py`
+- Benchmark compare-heavy workflows:
+	- `python scripts/bench_compare.py --repeat 3 --warmup 1`
+- Generate einsum scripts (writes to `generated_code/`):
+	- `python scripts/gen_einsum.py V2 T1 T1`
+	- `python scripts/gen_einsum.py V2 T2`
+	- `python scripts/gen_einsum.py F1 T1`
+	- `python scripts/gen_einsum.py CCSD_ENERGY`
+	- `python scripts/gen_einsum.py CCSD_AMPLITUDE`
 - Run fast tests:
 	- `pytest`
 - Run the slow CCSD integration test:

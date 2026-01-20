@@ -113,6 +113,12 @@ def pick(coeff1, coeff2):
 #--------then use the parity.paritty to decide sign and add all up in a list
 #--------send it to the levels for comparision.
 def juggle(term,pos):
+    cache = getattr(term, "_juggle_cache", None)
+    if cache is None:
+        cache = {}
+        term._juggle_cache = cache
+    if pos in cache:
+        return cache[pos]
     c=term.coeff_list[pos]
 
     possible_coeff_tmp=[]
@@ -145,6 +151,7 @@ def juggle(term,pos):
         ret_terms.append(copy.deepcopy(tmp_term))
     #print ' length og list terms after juggle is :', len(ret_terms)
 
+    cache[pos] = ret_terms
     return ret_terms
 
 
@@ -226,6 +233,9 @@ def level3(term1,term2):
     permute=[]
     ret=[]
     final_terms=[]
+    cached = getattr(term2, "_level3_variants", None)
+    if cached is not None:
+        return 1, list(cached)
     #print term2.coeff_list
     for c2,t2 in zip(term2.coeff_list, term2.map_org):
         if t2.name[0]=='T':
@@ -279,7 +289,8 @@ def level3(term1,term2):
         x=class_term.term(+1,copy.deepcopy(term2.sum_list), tmp_term, copy.deepcopy(term2.large_op_list),copy.deepcopy(term2.st),copy.deepcopy(term2.co))
         final_terms.append(x)
 
-    return 1, final_terms
+    term2._level3_variants = final_terms
+    return 1, list(final_terms)
 
 #Algo : all possible terms through permutations of a 4index coefficient etc
 # are produced. so there will be many forms of the same term in final_terms
@@ -289,14 +300,31 @@ def level3(term1,term2):
 def level4(term1, term2, final_terms):
     #produce all possibilities of each element coeffcient
     tmp_terms1=[]
-
+    positions = []
     for c2 in range(len(term1.coeff_list)):
-        if len(term1.coeff_list[c2])>=4:
-            for termx in final_terms:
-                if len(termx.coeff_list[c2])>=4:
-                    tmp_terms1.extend(juggle(termx,c2))
-            final_terms.extend(tmp_terms1)
-            tmp_terms1=[]
+        if len(term1.coeff_list[c2]) >= 4:
+            positions.append(c2)
+    if not positions:
+        return
+    positions = tuple(positions)
+    cache = getattr(term2, "_level4_cache", None)
+    if cache is None:
+        cache = {}
+        term2._level4_cache = cache
+    extras = cache.get(positions)
+    if extras is None:
+        base_terms = getattr(term2, "_level3_variants", final_terms)
+        working = list(base_terms)
+        extras = []
+        for c2 in positions:
+            tmp_terms1 = []
+            for termx in working:
+                if c2 < len(termx.coeff_list) and len(termx.coeff_list[c2]) >= 4:
+                    tmp_terms1.extend(juggle(termx, c2))
+            working.extend(tmp_terms1)
+            extras.extend(tmp_terms1)
+        cache[positions] = extras
+    final_terms.extend(extras)
 
 
 
@@ -488,4 +516,3 @@ def compare(term1, term2):
         #print len(final_terms)
     final_terms=[]
     return flag
-

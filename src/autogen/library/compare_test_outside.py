@@ -23,6 +23,7 @@ def create_matrices(term):
 
     #print term.imatrix 
     #print term.amatrix 
+    term._matrices_ready = True
 
 
 def level1(term1,term2):

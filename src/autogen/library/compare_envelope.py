@@ -1,22 +1,21 @@
-from . import compare as cpre
+from . import compare_utils
 from . import print_terms as pt
 #arguments: list of terms, face factor, last means whether this is the last commutator or not (0,1)
 def compare_envelope(list_terms, fc,last):
     #compare terms based on 5 levels of check all in cpre.compare()
     #for i in range(1):
         #for j in range(1,2):
-    for i in range(len(list_terms)):
-        for  j in range(i+1,len(list_terms)):
-            if list_terms[i].fac!=0 and list_terms[j].fac!=0:
-                flo= cpre.compare(list_terms[i],list_terms[j])  
-                if flo!=0:
-                    #print "comparing:", list_terms[i].fac,list_terms[i].coeff_list,list_terms[j].fac,list_terms[j].coeff_list, flo
-                    #print 'in result in the comparision',i,j,flo
-                    #why? (on below statement- 18Feb2020)
-                    #print 'this should be 0 always = ',list_terms[i].fac+list_terms[j].fac*flo
-                    list_terms[i].fac=list_terms[i].fac+list_terms[j].fac * flo
-                    list_terms[j].fac=0.0
-                    #print 'result in compare when matched',list_terms[i].fac,list_terms[j].fac,flo
+    compare_utils.ensure_matrices_for_terms(list_terms)
+
+    def merge_terms(rep, term, flo):
+        #print "comparing:", rep.fac, rep.coeff_list, term.fac, term.coeff_list, flo
+        #print 'in result in the comparision', i, j, flo
+        #print 'this should be 0 always = ', rep.fac + term.fac * flo
+        rep.fac = rep.fac + term.fac * flo
+        term.fac = 0.0
+        #print 'result in compare when matched', rep.fac, term.fac, flo
+
+    compare_utils.reduce_terms(list_terms, compare_utils.fast_compare, merge_terms)
 
     #muliply with the prefactor of the expression from the Housdoff Expression
     #for item in list_terms:

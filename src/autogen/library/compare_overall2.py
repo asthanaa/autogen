@@ -1,4 +1,5 @@
 from . import compare_test_outside as cpre
+from . import compare_utils
 from . import print_terms as pt
 #arguments: list of terms, face factor, last means whether this is the last commutator or not (0,1)
 def compare_envelope(list_terms, fc,last):
@@ -7,12 +8,15 @@ def compare_envelope(list_terms, fc,last):
         #for j in range(1,2):
 
 
-    for i in range(len(list_terms)):
-
-        for  j in range(i+1,len(list_terms)):
-            if list_terms[i].fac!=0 and list_terms[j].fac!=0:
+    for bucket in compare_utils.bucket_terms(list_terms):
+        for idx_i, i in enumerate(bucket):
+            if list_terms[i].fac == 0:
+                continue
+            for j in bucket[idx_i + 1 :]:
+                if list_terms[j].fac == 0:
+                    continue
                 #print 'non zero compare'
-                flo= cpre.compare(list_terms[i],list_terms[j])  
+                flo = cpre.compare(list_terms[i], list_terms[j])
                 #if flo!=0:
                 #    #print "comparing:", list_terms[i].fac,list_terms[i].coeff_list,list_terms[j].fac,list_terms[j].coeff_list, flo
                 #    #print 'in result in the comparision',i,j,flo
