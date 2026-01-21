@@ -43,7 +43,10 @@ When reducing equivalent terms, the compare layer supports an opt-in mode switch
 - `AUTOGEN_CACHE=0` disables contraction prefix caching (debug only).
 - `AUTOGEN_MULTI_CONT_CACHE=0` disables multi-operator contraction caching.
 - `AUTOGEN_MULTI_CONT_CACHE_SIZE=256` sets the multi-operator cache size (LRU).
-- `AUTOGEN_SPIN_SUMMED=1` enables spin-summed coefficients for spatial-orbital integrals (default).
+- `AUTOGEN_SPIN_SUMMED=1` emits spin-summed residuals (recommended for RHF).
+- `AUTOGEN_SPIN_SUMMED_MODE=spinorb` switches to the legacy spin-orbital wrapper path.
+- `AUTOGEN_INTERMEDIATE_MIN=3` sets the minimum reuse count for CCSD intermediates.
+- `AUTOGEN_INTERMEDIATE_MAX=80` caps the number of CCSD intermediates (0 = no cap).
 - `AUTOGEN_MATCHING_CACHE=0` disables pattern-level contraction match caching in `make_c`.
 - `AUTOGEN_MATCHING_CACHE_SIZE=128` sets the pattern cache size (LRU).
 - `AUTOGEN_NUMBA=1` enables Numba-based contraction enumeration (optional).
@@ -85,9 +88,17 @@ python scripts/gen_einsum.py V2 T2
 python scripts/gen_einsum.py F1 T1
 python scripts/gen_einsum.py CCSD_ENERGY
 python scripts/gen_einsum.py CCSD_AMPLITUDE
+python scripts/gen_einsum.py CCSD_AMPLITUDE --full --quiet
+python scripts/gen_einsum.py CCSD_AMPLITUDE --intermediates --quiet
+python scripts/gen_einsum.py --spec path/to/spec.py --full --quiet
+python scripts/gen_einsum.py --spec path/to/spec.py --intermediates --quiet
 ```
 
 Notes:
 - The CCSD energy script uses PySCF CCSD amplitudes and Fock matrix in the MO basis.
 - The default molecule for generated scripts is H2O/6-31G in `generated_code/pyscf_integrals.py`.
 - The iterative CCSD solver is generated under `generated_code/ccsd_amplitude/`.
+- Use `--full` to emit explicit residual terms and `--intermediates` to emit reusable intermediates.
+- Use `--spec` to drive custom term lists; the output defaults to `generated_code/<spec-stem>/residuals.py`.
+- For RHF spin-summed CCSD, generate with `AUTOGEN_SPIN_SUMMED=1` (optionally keep `SPIN_ADAPTED=True` in the spec).
+- Spin-summed residuals are generated directly from the Wicks terms. Set `AUTOGEN_SPIN_SUMMED_MODE=spinorb` only if you need the legacy wrapper mapping.

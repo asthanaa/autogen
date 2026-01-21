@@ -16,6 +16,11 @@ This file summarizes the recent performance and correctness work on Autogen.
   `src/autogen/library/change_terms.py`.
 - Spin-summed option: gated spin-loop factors and cross-spin 1/2 factors behind
   `AUTOGEN_SPIN_SUMMED` in `src/autogen/pkg/fix_uv.py` (default on).
+- Spin-summed CCSD residuals: generate directly from Wicks terms when
+  `AUTOGEN_SPIN_SUMMED=1`. The spin-orbital wrapper path is kept as an optional
+  fallback via `AUTOGEN_SPIN_SUMMED_MODE=spinorb`.
+- CCSD solver energy: updated the generated solver to use the PySCF RHF
+  CCSD energy formula with raw integrals (`g_raw`) for numerical agreement.
 - Numba support: optional contraction enumeration via `AUTOGEN_NUMBA=1`.
 - Fixed warnings and correctness: indentation in `src/autogen/library/class_term.py`,
   raw-string fixes in `src/autogen/pkg/fix_uv.py` and `src/autogen/pkg/fewt.py`,
@@ -28,6 +33,7 @@ This file summarizes the recent performance and correctness work on Autogen.
 - `scripts/profile_term_breakdown.py`: measure `make_op`, `multi_cont`, `full_con`,
   `change_terms`, `compare+reduce`.
 - `scripts/profile_compare_hotspots.py`: report per-function compare timings.
+- `tests/test_ccsd_pyscf.py`: slow PySCF-backed verification of energy and residuals.
 
 ## Environment variables
 
@@ -39,6 +45,8 @@ This file summarizes the recent performance and correctness work on Autogen.
 - `AUTOGEN_NUMBA=1`
 - `AUTOGEN_NUMBA_CANDS_CACHE=0`, `AUTOGEN_NUMBA_CANDS_CACHE_SIZE=...`
 - `AUTOGEN_SPIN_SUMMED=1` (default on)
+- `AUTOGEN_SPIN_SUMMED_MODE=spinorb` (legacy wrapper path)
+- `SPIN_ADAPTED=True` in a spec for RHF spin-summed CCSD residual generation
 
 For details, see `docs/usage.md` and `docs/performance.md`.
 
@@ -59,9 +67,19 @@ Full CCSD amplitude timing (`scripts/time_ccsd_full.py`) with Numba available:
 - ~39.3s (Numba-enabled run in this repo). If Numba is not installed, the run
   falls back to the Python path and can be significantly slower.
 
+## Intermediate residuals
+
+- Added `--intermediates` mode in `scripts/gen_einsum.py` to emit reusable pair
+  intermediates and grouped `einsum` calls with `optimize=True`.
+- Generated CCSD residuals now expose `AUTOGEN_INTERMEDIATES` and
+  `compute_r1_r2` for shared intermediate reuse across R1/R2.
+- Added `--spec` support to generate residual code from a user-provided Python
+  spec (custom term lists with optional intermediate emission).
+
 ## Tests
 
 - `pytest -q` (1 skipped)
+- `RUN_SLOW=1 pytest -q -k pyscf` for PySCF numeric checks
 
 ## Numba install note (macOS)
 

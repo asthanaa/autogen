@@ -60,6 +60,14 @@ reduce per-term overhead when building and emitting contracted terms.
 Note: the order of emitted terms can differ when Numba is enabled, but the
 resulting set of terms and constants should be equivalent.
 
+## CCSD intermediates
+
+`scripts/gen_einsum.py CCSD_AMPLITUDE --intermediates` emits reusable pair
+intermediates and groups repeated `einsum` calls.
+
+- `AUTOGEN_INTERMEDIATE_MIN=3` sets the minimum reuse count to materialize.
+- `AUTOGEN_INTERMEDIATE_MAX=80` caps the number of intermediates (0 = no cap).
+
 ## Parity helpers
 
 The parity computation caches the index map for `full_pos` to avoid rebuilding
