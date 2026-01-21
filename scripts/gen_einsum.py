@@ -264,9 +264,9 @@ def _spin_adapt_spin_factor(tensors, fixed_spins):
 
     for name, labels in tensors:
         label_tokens = _tokenize_labels(labels)
-        if name in {"f", "t1"} and len(label_tokens) >= 2:
+        if name in {"f", "t1", "r1", "d1"} and len(label_tokens) >= 2:
             union(label_tokens[0], label_tokens[1])
-        elif name == "t2" and len(label_tokens) >= 4:
+        elif name in {"t2", "r2", "d2"} and len(label_tokens) >= 4:
             union(label_tokens[0], label_tokens[2])
             union(label_tokens[1], label_tokens[3])
         elif name == "g" and len(label_tokens) >= 4:
@@ -765,12 +765,16 @@ def emit_spec_residuals(
     spin_summed = os.getenv("AUTOGEN_SPIN_SUMMED", "1") != "0"
     if spin_summed_override is not None:
         spin_summed = spin_summed_override
-    if spin_summed and (spin_adapted or eom_mode) and _allow_spin_adapted:
+    mode_flag = None
+    if spin_summed and (spin_adapted or eom_mode):
         mode_flag = os.getenv("AUTOGEN_SPIN_SUMMED_MODE")
         if mode_flag is None:
             mode_flag = "spinorb" if eom_mode else "direct"
         else:
             mode_flag = mode_flag.lower().strip()
+        if eom_mode and mode_flag == "direct":
+            mode_flag = "spinorb"
+    if spin_summed and (spin_adapted or eom_mode) and _allow_spin_adapted:
         if mode_flag == "spinorb":
             emit_spec_residuals(
                 output_dir,
@@ -819,13 +823,22 @@ def emit_spec_residuals(
     output_structs = {key: [] for key in output_order}
     output_labels_map = {}
     all_structs = []
+    adapt_direct = (
+        spin_summed
+        and spin_adapted
+        and eom_mode
+        and mode_flag == "direct"
+    )
     for output_key, term in built_terms:
         output_labels, tensors, coeff = _term_to_residual_struct(
             term, tensor_map=tensor_map, require_output=False
         )
         if output_key != "scalar" and not output_labels:
             raise ValueError(f"Output '{output_key}' requires an X projector.")
-        structs = [(output_labels, tensors, coeff)]
+        if adapt_direct:
+            structs = _spin_adapt_structs(output_labels, tensors, coeff)
+        else:
+            structs = [(output_labels, tensors, coeff)]
         for out_labels, tensors, coeff in structs:
             out_labels, tensors = _canonicalize_term_labels(out_labels, tensors)
             if output_key in output_labels_map:

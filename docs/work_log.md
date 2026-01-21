@@ -20,6 +20,8 @@ This file summarizes the recent performance and correctness work on Autogen.
 - EE-EOM-CCSD spin adaptation: default to the spin-orbital singlet wrapper for
   `SPIN_ADAPTED` specs and map R1/R2 via PySCF singlet transforms to match
   `eom_rccsd.EOMEESinglet`.
+- EE-EOM-CCSD direct mode: treat `AUTOGEN_SPIN_SUMMED_MODE=direct` as an alias
+  to the singlet wrapper to keep results consistent with PySCF.
 - EOM index handling: tokenized indexed labels (e.g., `i1`, `a1`) during
   canonicalization and intermediate selection, and made `view_tensor`/output
   labeling robust to numeric suffixes.
