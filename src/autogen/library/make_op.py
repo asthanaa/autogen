@@ -215,14 +215,14 @@ def make_op(list_op, dict_ind):
             #coeff=['i','j','a','b']
             coeff=[]
             opp=func_ewt.contractedobj('op', 1, 1)
-            opp.upper=[chr(num1),chr(num1+1)]
-            opp.lower=[chr(num2),chr(num2+1)]
+            opp.upper=[next_op('a',list_type,0),next_op('a',list_type,1)]
+            opp.lower=[next_op('i',list_type,0),next_op('i',list_type,1)]
             st=[[opp]]
             co=[[1,1]]
-            dict_ind[chr(num1)]=lop
-            dict_ind[chr(num1+1)]=lop
-            dict_ind[chr(num2)]=lop
-            dict_ind[chr(num2+1)]=lop
+            dict_ind[next_op('a',list_type,0)]=lop
+            dict_ind[next_op('a',list_type,1)]=lop
+            dict_ind[next_op('i',list_type,0)]=lop
+            dict_ind[next_op('i',list_type,1)]=lop
 
             X2 = class1.large_operator(lop,fac, summ, coeff, st, co)
             list_main.append(X2)

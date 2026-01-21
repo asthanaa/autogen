@@ -148,8 +148,8 @@ def coeff_seen(coeff):
     return flag2
 def swap(c1):
     tmp = c1[2]
-    c[2]=c[3]
-    c[3]=tmp
+    c1[2] = c1[3]
+    c1[3] = tmp
 
 def match(term1,term2,i1,i2,nondummy_map):
     #same type:if not dummy, samename: if dummy ok

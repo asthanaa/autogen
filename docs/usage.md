@@ -105,5 +105,6 @@ Notes:
 - Method input specs live under `method_inputs/<method>/`.
 - For RHF spin-summed CCSD, generate with `AUTOGEN_SPIN_SUMMED=1` (optionally keep `SPIN_ADAPTED=True` in the spec).
 - Spin-summed residuals are generated directly from the Wicks terms. Set `AUTOGEN_SPIN_SUMMED_MODE=spinorb` only if you need the spin-orbital wrapper mapping.
-- EE-EOM-CCSD uses the same spin-summed RHF pathway and emits `eom_solver.py` plus `eom_pyscf_test.py` under `generated_code/methods/eom_ccsd/`. The EOM spec defaults to the spin-orbital singlet wrapper when `SPIN_ADAPTED=True`; override with `AUTOGEN_SPIN_SUMMED_MODE=direct` if you need the direct Wicks spin-sum.
+- EE-EOM-CCSD uses the same spin-summed RHF pathway and emits `eom_solver.py` plus `eom_pyscf_test.py` under `generated_code/methods/eom_ccsd/`.
+- The EOM spec defaults to the spin-orbital singlet wrapper when `SPIN_ADAPTED=True`; override with `AUTOGEN_SPIN_SUMMED_MODE=direct` if you need the direct Wicks spin-sum. In spin-orbital mode, the generator emits `residuals_spinorb.py` plus a `residuals.py` wrapper that maps singlet amplitudes in/out.
 - The EE-EOM-CCSD spec defaults to `EOM_BCH=True`, which builds H̅ via nested commutators (exact for CCSD, fewer terms than direct T-expansion).

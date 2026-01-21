@@ -1,3 +1,5 @@
+import sys
+
 from . import compare_test_outside as cpre
 from . import compare_utils
 from . import print_terms as pt

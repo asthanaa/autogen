@@ -51,6 +51,10 @@ def coeff_allseen(term,coeff,seen_list):
         if post not in seen_list:
             flag=0
     return flag
+
+def seen(seen_list, position):
+    return 1 if position in seen_list else 0
+
 def pick(sign,term1,term2,seen_list1,seen_list2,order):
     pos1=pos.pos(-1,-1)
     pos2=pos.pos(-1,-1)
@@ -63,14 +67,14 @@ def pick(sign,term1,term2,seen_list1,seen_list2,order):
                     pos1.i2=0
                     pos2.i1=i
                     pos2.i2=0
-                    if seen(seen_list,pos1)==0 and seen(seen_list,pos2):
+                    if seen(seen_list1,pos1)==0 and seen(seen_list2,pos2):
                         return pos1,pos2
                 elif order==4:
                     pos1.i1=i
                     pos1.i2=1
                     pos2.i1=i
                     pos2.i2=1
-                    if seen(seen_list,pos1)==0 and seen(seen_list,pos2)==0:
+                    if seen(seen_list1,pos1)==0 and seen(seen_list2,pos2)==0:
                         return pos1,pos2
                     else :
                         print("both options in order 1 are seen (function pick in compare)")
@@ -80,14 +84,14 @@ def pick(sign,term1,term2,seen_list1,seen_list2,order):
                     pos1.i2=0
                     pos2.i1=i
                     pos2.i2=1
-                    if seen(seen_list,pos1)==0 and seen(seen_list,pos2):
+                    if seen(seen_list1,pos1)==0 and seen(seen_list2,pos2):
                         return pos1,pos2
                 elif order==3:
                     pos1.i1=i
                     pos1.i2=1
                     pos2.i1=i
                     pos2.i2=0
-                    if seen(seen_list,pos1)==0 and seen(seen_list,pos2)==0:
+                    if seen(seen_list1,pos1)==0 and seen(seen_list2,pos2)==0:
                         return pos1,pos2
                     else :
                         print("both options in order 1 are seen (function pick in compare)")

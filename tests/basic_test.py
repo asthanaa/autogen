@@ -1,5 +1,6 @@
 #from tests import ccsd_amplitude as ccsd
 from autogen.main_tools.commutator import comm
+from autogen.main_tools.product import prod
 from autogen.library import print_terms
 from autogen.library import full_con
 
@@ -9,7 +10,7 @@ from autogen.library import full_con
 
 print('case of [V,T1]')
 list_terms=prod(['V2'],['T1'],1)
-print_terms.print_terms(VT1example)
+print_terms.print_terms(list_terms)
 
 print('case of [V,T2]')
 list_terms=comm(['V2'],['T2'],1)

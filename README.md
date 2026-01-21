@@ -91,6 +91,7 @@ Use these package paths:
 	- `python scripts/gen_einsum.py CCSD_ENERGY`
 	- `python scripts/gen_einsum.py CCSD_AMPLITUDE`
 	- `python scripts/gen_einsum.py --spec method_inputs/eom_ccsd/ee_eom_ccsd_spec.py --intermediates --quiet`
+- Method input specs live under `method_inputs/<method>/`, and slow-test molecule fixtures live under `tests/molecules/`.
 - Run fast tests:
 	- `pytest`
 - Run the slow CCSD integration test:

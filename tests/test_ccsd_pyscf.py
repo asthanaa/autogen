@@ -72,9 +72,9 @@ def test_ccsd_residuals_match_pyscf_update(monkeypatch):
     autogen_resid = importlib.reload(autogen_resid)
     assert not hasattr(autogen_resid, "build_terms"), (
         "Generate precomputed residuals with "
-            "`python scripts/gen_einsum.py CCSD_AMPLITUDE --full --quiet` "
-            "or `python scripts/gen_einsum.py CCSD_AMPLITUDE --intermediates --quiet`."
-        )
+        "`python scripts/gen_einsum.py CCSD_AMPLITUDE --full --quiet` "
+        "or `python scripts/gen_einsum.py CCSD_AMPLITUDE --intermediates --quiet`."
+    )
     if getattr(autogen_resid, "AUTOGEN_SPIN_SUMMED", None) is not True:
         pytest.skip(
             "Precomputed residuals were not generated with spin-summed mode. "

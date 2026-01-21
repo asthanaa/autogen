@@ -1,3 +1,5 @@
+import sys
+
 from . import compare_utils
 from . import print_terms as pt
 #arguments: list of terms, face factor, last means whether this is the last commutator or not (0,1)
