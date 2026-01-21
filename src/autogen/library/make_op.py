@@ -305,6 +305,40 @@ def make_op(list_op, dict_ind):
             T2 = class1.large_operator(lop,fac, summ, coeff, stt, co)
             list_main.append(T2)
             _maybe_print(summ,opp.upper,opp.lower)
+        elif lop[0]=='R' and lop[1]=='1':
+            fac=1.0
+            summ=[next_op('a',list_type,0),next_op('i',list_type,0)]
+            coeff=[next_op('a',list_type,0),next_op('i',list_type,0)]
+            opp=func_ewt.contractedobj('op', 1, 1)
+            opp.upper=[next_op('a',list_type,0)]
+            opp.lower=[next_op('i',list_type,0)]
+            stt=[[opp]]
+            co=[[1,1]]
+            dict_ind[next_op('a',list_type,0)]=lop
+            dict_ind[next_op('i',list_type,0)]=lop
+            R1 = class1.large_operator(lop,fac, summ, coeff, stt, co)
+            list_main.append(R1)
+            list_type[0]+=1
+            list_type[1]+=1
+            _maybe_print(summ,opp.upper,opp.lower)
+        elif lop[0]=='R' and lop[1]=='2':
+            fac=1.0/4.0
+            summ=[next_op('a',list_type,0),next_op('a',list_type,1),next_op('i',list_type,0),next_op('i',list_type,1)]
+            coeff=[next_op('a',list_type,0),next_op('a',list_type,1),next_op('i',list_type,0),next_op('i',list_type,1)]
+            opp=func_ewt.contractedobj('op', 1, 1)
+            opp.upper=[next_op('a',list_type,0),next_op('a',list_type,1)]
+            opp.lower=[next_op('i',list_type,0),next_op('i',list_type,1)]
+            stt=[[opp]]
+            co=[[1,1]]
+            dict_ind[next_op('a',list_type,0)]=lop
+            dict_ind[next_op('a',list_type,1)]=lop
+            dict_ind[next_op('i',list_type,0)]=lop
+            dict_ind[next_op('i',list_type,1)]=lop
+            list_type[0]+=2
+            list_type[1]+=2
+            R2 = class1.large_operator(lop,fac, summ, coeff, stt, co)
+            list_main.append(R2)
+            _maybe_print(summ,opp.upper,opp.lower)
         else :
             _maybe_print("input error in making operators--------------------")
     return list_main, dict_ind

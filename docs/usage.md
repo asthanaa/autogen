@@ -92,13 +92,18 @@ python scripts/gen_einsum.py CCSD_AMPLITUDE --full --quiet
 python scripts/gen_einsum.py CCSD_AMPLITUDE --intermediates --quiet
 python scripts/gen_einsum.py --spec path/to/spec.py --full --quiet
 python scripts/gen_einsum.py --spec path/to/spec.py --intermediates --quiet
+python scripts/gen_einsum.py --spec method_inputs/ccsd/ccsd_spec.py --intermediates --quiet
+python scripts/gen_einsum.py --spec method_inputs/eom_ccsd/ee_eom_ccsd_spec.py --intermediates --quiet
 ```
 
 Notes:
 - The CCSD energy script uses PySCF CCSD amplitudes and Fock matrix in the MO basis.
 - The default molecule for generated scripts is H2O/6-31G in `generated_code/pyscf_integrals.py`.
-- The iterative CCSD solver is generated under `generated_code/ccsd_amplitude/`.
+- The iterative CCSD solver is generated under `generated_code/methods/ccsd/ccsd_amplitude/`.
 - Use `--full` to emit explicit residual terms and `--intermediates` to emit reusable intermediates.
-- Use `--spec` to drive custom term lists; the output defaults to `generated_code/<spec-stem>/residuals.py`.
+- Use `--spec` to drive custom term lists; the output defaults to `generated_code/methods/<spec-stem>/residuals.py`.
+- Method input specs live under `method_inputs/<method>/`.
 - For RHF spin-summed CCSD, generate with `AUTOGEN_SPIN_SUMMED=1` (optionally keep `SPIN_ADAPTED=True` in the spec).
-- Spin-summed residuals are generated directly from the Wicks terms. Set `AUTOGEN_SPIN_SUMMED_MODE=spinorb` only if you need the legacy wrapper mapping.
+- Spin-summed residuals are generated directly from the Wicks terms. Set `AUTOGEN_SPIN_SUMMED_MODE=spinorb` only if you need the spin-orbital wrapper mapping.
+- EE-EOM-CCSD uses the same spin-summed RHF pathway and emits `eom_solver.py` plus `eom_pyscf_test.py` under `generated_code/methods/eom_ccsd/`. The EOM spec defaults to the spin-orbital singlet wrapper when `SPIN_ADAPTED=True`; override with `AUTOGEN_SPIN_SUMMED_MODE=direct` if you need the direct Wicks spin-sum.
+- The EE-EOM-CCSD spec defaults to `EOM_BCH=True`, which builds H̅ via nested commutators (exact for CCSD, fewer terms than direct T-expansion).

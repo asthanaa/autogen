@@ -8,11 +8,12 @@ Runs the quick unit + smoke tests:
 
 ## Slow tests
 
-The CCSD amplitude generation test is marked slow and skipped by default.
-Enable it with:
+PySCF-backed CCSD checks (now parameterized over several molecules) are marked
+slow and skipped by default. Enable them with:
 
 - `RUN_SLOW=1 conda run -n autogen pytest -q`
 
 Or just that subset:
 
 - `RUN_SLOW=1 conda run -n autogen pytest -q -k ccsd`
+- `RUN_SLOW=1 conda run -n autogen pytest -q -k eom_ccsd`

@@ -3,6 +3,7 @@ from __future__ import annotations
 # Generate einsum-based evaluators from Autogen contraction output.
 
 import contextlib
+import re
 from pathlib import Path
 import os
 import runpy
@@ -11,10 +12,16 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
+GENERATED_DIR = ROOT / "generated_code"
+METHODS_DIR = GENERATED_DIR / "methods"
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SRC))
 
+from autogen.main_tools import commutator as comm  # noqa: E402
 from autogen.main_tools import multi_cont  # noqa: E402
+from autogen.main_tools import product as prod  # noqa: E402
 from autogen.library import change_terms  # noqa: E402
+from autogen.library import compare_utils  # noqa: E402
 from autogen.library import full_con  # noqa: E402
 from autogen.library import make_op  # noqa: E402
 from autogen.library import compare as cpre  # noqa: E402
@@ -26,6 +33,8 @@ TENSOR_MAP = {
     "F1": "f",
     "T1": "t1",
     "T2": "t2",
+    "R1": "r1",
+    "R2": "r2",
     "D1": "d1",
     "D2": "d2",
     "X1": "x1",
@@ -63,6 +72,26 @@ def _spin_summed_context(enabled: bool):
         fix_uv.SPIN_SUMMED = prev_fix
 
 
+def _root_depth_for(path: Path) -> int:
+    return len(path.relative_to(ROOT).parts)
+
+
+def _ensure_output_package(output_dir: Path) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        rel = output_dir.resolve().relative_to(ROOT)
+    except ValueError:
+        return
+    if not rel.parts or rel.parts[0] != "generated_code":
+        return
+    cur = ROOT
+    for part in rel.parts:
+        cur = cur / part
+        init_path = cur / "__init__.py"
+        if not init_path.exists():
+            init_path.write_text("")
+
+
 def canonicalize_g(labels):
     # Normalize antisymmetrized two-electron labels to ijab ordering.
     if len(labels) != 4:
@@ -84,9 +113,12 @@ def canonicalize_g(labels):
 
 
 def _label_type(label):
-    if label in VIRT_SET:
+    if not label:
+        return "p"
+    base = label[0]
+    if base in VIRT_SET:
         return "v"
-    if label in OCC_SET:
+    if base in OCC_SET:
         return "o"
     return "p"
 
@@ -94,6 +126,15 @@ def _label_type(label):
 def _sort_labels(labels):
     order = {"v": 0, "o": 1, "p": 2}
     return sorted(labels, key=lambda x: (order[_label_type(x)], x))
+
+
+_LABEL_RE = re.compile(r"[a-z][0-9]*")
+
+
+def _tokenize_labels(labels: str):
+    if not labels:
+        return []
+    return _LABEL_RE.findall(labels)
 
 
 def _canonicalize_term_labels(output_labels, tensors):
@@ -105,31 +146,36 @@ def _canonicalize_term_labels(output_labels, tensors):
     def map_label(label):
         if label in mapping:
             return mapping[label]
-        if label in VIRT_SET:
+        base = label[0] if label else ""
+        if base in VIRT_SET:
             new = next(virt_iter)
-        elif label in OCC_SET:
+        elif base in OCC_SET:
             new = next(occ_iter)
         else:
             new = next(gen_iter)
         mapping[label] = new
         return new
 
-    output_can = "".join(map_label(label) for label in output_labels)
+    output_tokens = _tokenize_labels(output_labels)
+    output_can = "".join(map_label(label) for label in output_tokens)
     tensors_can = []
     for name, labels in tensors:
-        tensors_can.append((name, "".join(map_label(label) for label in labels)))
+        label_tokens = _tokenize_labels(labels)
+        tensors_can.append((name, "".join(map_label(label) for label in label_tokens)))
     return output_can, tensors_can
 
 
 def _pair_key(op1, op2):
     name1, labels1 = op1
     name2, labels2 = op2
-    common = set(labels1) & set(labels2)
+    labels1_tokens = _tokenize_labels(labels1)
+    labels2_tokens = _tokenize_labels(labels2)
+    common = set(labels1_tokens) & set(labels2_tokens)
     out_labels = []
-    for label in labels1:
+    for label in labels1_tokens:
         if label not in common and label not in out_labels:
             out_labels.append(label)
-    for label in labels2:
+    for label in labels2_tokens:
         if label not in common and label not in out_labels:
             out_labels.append(label)
     out_labels = _sort_labels(out_labels)
@@ -163,29 +209,31 @@ def _term_to_residual_struct(term, tensor_map=None, require_output=True):
 def _spin_adapt_output_spins(output_labels):
     if not output_labels:
         return {}
-    if len(output_labels) == 2:
-        return {output_labels[0]: 0, output_labels[1]: 0}
-    if len(output_labels) == 4:
+    tokens = _tokenize_labels(output_labels)
+    if len(tokens) == 2:
+        return {tokens[0]: 0, tokens[1]: 0}
+    if len(tokens) == 4:
         return {
-            output_labels[0]: 0,
-            output_labels[2]: 0,
-            output_labels[1]: 1,
-            output_labels[3]: 1,
+            tokens[0]: 0,
+            tokens[2]: 0,
+            tokens[1]: 1,
+            tokens[3]: 1,
         }
-    return {label: 0 for label in output_labels}
+    return {label: 0 for label in tokens}
 
 
 def _spin_adapt_expand_g(tensors):
     expanded = [(list(tensors), 1.0)]
     for idx, (name, labels) in enumerate(tensors):
-        if name != "g" or len(labels) != 4:
+        label_tokens = _tokenize_labels(labels)
+        if name != "g" or len(label_tokens) != 4:
             continue
         next_expanded = []
         for base, sign in expanded:
             direct = list(base)
             direct[idx] = (name, labels)
             next_expanded.append((direct, sign))
-            exch_labels = labels[:2] + labels[3] + labels[2]
+            exch_labels = "".join(label_tokens[:2] + [label_tokens[3], label_tokens[2]])
             exchange = list(base)
             exchange[idx] = (name, exch_labels)
             next_expanded.append((exchange, -sign))
@@ -209,20 +257,21 @@ def _spin_adapt_spin_factor(tensors, fixed_spins):
             parent[rb] = ra
 
     for _name, labels in tensors:
-        for label in labels:
+        for label in _tokenize_labels(labels):
             find(label)
     for label in fixed_spins:
         find(label)
 
     for name, labels in tensors:
-        if name in {"f", "t1"}:
-            union(labels[0], labels[1])
-        elif name == "t2":
-            union(labels[0], labels[2])
-            union(labels[1], labels[3])
-        elif name == "g":
-            union(labels[0], labels[2])
-            union(labels[1], labels[3])
+        label_tokens = _tokenize_labels(labels)
+        if name in {"f", "t1"} and len(label_tokens) >= 2:
+            union(label_tokens[0], label_tokens[1])
+        elif name == "t2" and len(label_tokens) >= 4:
+            union(label_tokens[0], label_tokens[2])
+            union(label_tokens[1], label_tokens[3])
+        elif name == "g" and len(label_tokens) >= 4:
+            union(label_tokens[0], label_tokens[2])
+            union(label_tokens[1], label_tokens[3])
 
     groups = {}
     for label in parent:
@@ -242,9 +291,10 @@ def _spin_adapt_spin_factor(tensors, fixed_spins):
 
 
 def _canonicalize_spin_summed_tensor(name, labels):
-    if name in {"g", "t2"} and len(labels) == 4:
-        left = sorted(labels[:2])
-        right = sorted(labels[2:])
+    label_tokens = _tokenize_labels(labels)
+    if name in {"g", "t2"} and len(label_tokens) == 4:
+        left = sorted(label_tokens[:2])
+        right = sorted(label_tokens[2:])
         return name, "".join(left + right)
     return name, labels
 
@@ -369,15 +419,70 @@ def build_terms(list_char_op, merge: bool = True, quiet: bool = False):
             term.build_map_org()
 
         if merge:
-            for i in range(len(terms)):
-                for j in range(i + 1, len(terms)):
-                    if terms[i].fac != 0.0 and terms[j].fac != 0.0:
-                        flo = cpre.compare(terms[i], terms[j])
-                        if flo != 0:
-                            terms[i].fac = terms[i].fac + terms[j].fac * flo
-                            terms[j].fac = 0.0
+            def merge_terms(rep, term, flo):
+                rep.fac = rep.fac + term.fac * flo
+                term.fac = 0.0
+
+            compare_utils.reduce_terms_two_stage(
+                terms,
+                compare_utils.fast_compare,
+                merge_terms,
+                key_func=compare_utils.coarse_key,
+                secondary_key_func=compare_utils.matrix_key,
+            )
 
         return [term for term in terms if term.fac != 0.0]
+
+
+def build_eom_bch_terms(
+    max_order: int = 4,
+    t1_labels: tuple[str, ...] = ("T1", "T11", "T12", "T13"),
+    t2_labels: tuple[str, ...] = ("T2", "T21"),
+    h_ops: tuple[str, ...] = ("F1", "V2"),
+    outputs: tuple[str, ...] = ("X1", "X2"),
+    quiet: bool = False,
+):
+    from math import factorial
+    from itertools import product
+
+    built_terms = []
+
+    with suppress_output(quiet):
+        for h_op in h_ops:
+            for n in range(max_order + 1):
+                fac = 1.0 / factorial(n)
+                for seq in product(("T1", "T2"), repeat=n):
+                    t1_count = seq.count("T1")
+                    t2_count = n - t1_count
+                    if t1_count > len(t1_labels) or t2_count > len(t2_labels):
+                        continue
+                    t1_idx = 0
+                    t2_idx = 0
+                    t_ops = []
+                    for kind in seq:
+                        if kind == "T1":
+                            t_ops.append(t1_labels[t1_idx])
+                            t1_idx += 1
+                        else:
+                            t_ops.append(t2_labels[t2_idx])
+                            t2_idx += 1
+                    h_terms = [h_op]
+                    for t_op in t_ops:
+                        h_terms = comm.comm(h_terms, [t_op], last=0)
+                        if not h_terms:
+                            break
+                    if not h_terms:
+                        continue
+                    for r_op in ("R1", "R2"):
+                        hr_terms = comm.comm(h_terms, [r_op], last=0)
+                        if not hr_terms:
+                            continue
+                        for output_key in outputs:
+                            xr_terms = prod.prod([output_key], hr_terms, fac)
+                            for term in xr_terms:
+                                built_terms.append((output_key, term))
+
+    return built_terms
 
 
 def term_to_einsum(term):
@@ -418,8 +523,8 @@ def term_to_einsum(term):
 
 
 def output_labels_from_xop(coeff):
-    virt = [label for label in coeff if label in VIRT_SET]
-    occ = [label for label in coeff if label in OCC_SET]
+    virt = [label for label in coeff if label and label[0] in VIRT_SET]
+    occ = [label for label in coeff if label and label[0] in OCC_SET]
     return "".join(virt + occ)
 
 
@@ -537,9 +642,12 @@ def load_spec(spec_path):
 
 
 def parse_spec_terms(spec):
-    if "TERMS" not in spec:
-        raise ValueError("Spec file must define TERMS.")
-    raw_terms = spec["TERMS"]
+    raw_terms = spec.get("TERMS")
+    if raw_terms is None:
+        if spec.get("EOM_BCH"):
+            raw_terms = []
+        else:
+            raise ValueError("Spec file must define TERMS.")
     if not isinstance(raw_terms, (list, tuple)):
         raise ValueError("TERMS must be a list or tuple.")
 
@@ -629,7 +737,7 @@ def parse_spec_terms(spec):
 
 
 def _ordered_tensor_names(names):
-    tensor_order = ["f", "g", "t1", "t2", "d1", "d2", "x1", "x2"]
+    tensor_order = ["f", "g", "t1", "t2", "r1", "r2", "d1", "d2", "x1", "x2"]
     ordered = [name for name in tensor_order if name in names]
     extras = sorted(name for name in names if name not in tensor_order)
     return ordered + extras
@@ -647,6 +755,8 @@ def emit_spec_residuals(
     filename: str = "residuals.py",
     spin_summed_override: bool | None = None,
     _allow_spin_adapted: bool = True,
+    prebuilt_terms=None,
+    eom_mode: bool = False,
 ):
     output_dir.mkdir(parents=True, exist_ok=True)
     mode = mode.lower()
@@ -655,8 +765,12 @@ def emit_spec_residuals(
     spin_summed = os.getenv("AUTOGEN_SPIN_SUMMED", "1") != "0"
     if spin_summed_override is not None:
         spin_summed = spin_summed_override
-    if spin_summed and spin_adapted and _allow_spin_adapted:
-        mode_flag = os.getenv("AUTOGEN_SPIN_SUMMED_MODE", "direct").lower().strip()
+    if spin_summed and (spin_adapted or eom_mode) and _allow_spin_adapted:
+        mode_flag = os.getenv("AUTOGEN_SPIN_SUMMED_MODE")
+        if mode_flag is None:
+            mode_flag = "spinorb" if eom_mode else "direct"
+        else:
+            mode_flag = mode_flag.lower().strip()
         if mode_flag == "spinorb":
             emit_spec_residuals(
                 output_dir,
@@ -670,21 +784,34 @@ def emit_spec_residuals(
                 filename="residuals_spinorb.py",
                 spin_summed_override=False,
                 _allow_spin_adapted=False,
+                eom_mode=eom_mode,
+                prebuilt_terms=prebuilt_terms,
             )
-            emit_spin_adapted_wrapper(output_dir, output_names, mode=mode)
+            emit_spin_adapted_wrapper(
+                output_dir,
+                output_names,
+                mode=mode,
+                eom_mode=eom_mode,
+            )
             return
 
     built_terms = []
     output_order = []
     with _spin_summed_context(spin_summed):
-        for term_spec in spec_terms:
-            output_key = term_spec["output_key"]
-            if output_key not in output_order:
-                output_order.append(output_key)
-            terms = build_terms(term_spec["ops"], merge=False, quiet=quiet)
-            for term in terms:
-                term.fac *= term_spec["fac"]
+        if prebuilt_terms is not None:
+            for output_key, term in prebuilt_terms:
+                if output_key not in output_order:
+                    output_order.append(output_key)
                 built_terms.append((output_key, term))
+        else:
+            for term_spec in spec_terms:
+                output_key = term_spec["output_key"]
+                if output_key not in output_order:
+                    output_order.append(output_key)
+                terms = build_terms(term_spec["ops"], merge=False, quiet=quiet)
+                for term in terms:
+                    term.fac *= term_spec["fac"]
+                    built_terms.append((output_key, term))
 
     if not built_terms:
         raise ValueError("No terms produced from spec.")
@@ -762,10 +889,10 @@ def emit_spec_residuals(
     lines.append("    idx = []")
     lines.append("    list_axes = []")
     lines.append("    for axis, label in enumerate(labels):")
-    lines.append("        if label in OCC:")
+    lines.append("        if label and label[0] in OCC:")
     lines.append("            idx.append(o)")
     lines.append("            list_axes.append(axis)")
-    lines.append("        elif label in VIRT:")
+    lines.append("        elif label and label[0] in VIRT:")
     lines.append("            idx.append(v)")
     lines.append("            list_axes.append(axis)")
     lines.append("        else:")
@@ -787,9 +914,9 @@ def emit_spec_residuals(
     lines.append("        return 0.0")
     lines.append("    shape = []")
     lines.append("    for label in labels:")
-    lines.append("        if label in OCC:")
+    lines.append("        if label and label[0] in OCC:")
     lines.append("            shape.append(len(o))")
-    lines.append("        elif label in VIRT:")
+    lines.append("        elif label and label[0] in VIRT:")
     lines.append("            shape.append(len(v))")
     lines.append("        else:")
     lines.append("            shape.append(len(o) + len(v))")
@@ -907,109 +1034,160 @@ def emit_spec_residuals(
     (output_dir / filename).write_text("\n".join(lines) + "\n")
 
 
-def emit_spin_adapted_wrapper(output_dir, output_names, mode: str = "full"):
+def emit_spin_adapted_wrapper(
+    output_dir,
+    output_names,
+    mode: str = "full",
+    eom_mode: bool = False,
+):
     output_dir = Path(output_dir)
     r1_name = resolve_output_name("X1", output_names)
     r2_name = resolve_output_name("X2", output_names)
     inter_flag = mode == "intermediates"
-    wrapper = f"""import numpy as np
 
-from pyscf.cc import addons
+    lines = []
+    lines.append("import numpy as np")
+    lines.append("")
+    if eom_mode:
+        lines.append("from pyscf.cc import addons, eom_rccsd, eom_uccsd")
+    else:
+        lines.append("from pyscf.cc import addons")
+    lines.append("")
+    lines.append("from . import residuals_spinorb as spinorb")
+    lines.append("")
+    lines.append("AUTOGEN_SPIN_SUMMED = True")
+    lines.append(f"AUTOGEN_INTERMEDIATES = {inter_flag}")
+    lines.append("VIEW_TENSORS = ('f', 'g')")
+    lines.append("")
+    lines.append("def _orbspin(nocc, nmo):")
+    lines.append("    orbspin = np.zeros(2 * nmo, dtype=int)")
+    lines.append("    orbspin[1::2] = 1")
+    lines.append("    return orbspin")
+    lines.append("")
+    lines.append("def _build_spin_orbital_fock(f, nocc):")
+    lines.append("    nmo = f.shape[0]")
+    lines.append("    nocc_so = 2 * nocc")
+    lines.append("    nvir_so = 2 * (nmo - nocc)")
+    lines.append("    f_so = np.zeros((nocc_so + nvir_so, nocc_so + nvir_so))")
+    lines.append("    for p in range(nmo):")
+    lines.append("        for q in range(nmo):")
+    lines.append("            for spin in (0, 1):")
+    lines.append("                if p < nocc:")
+    lines.append("                    p_so = 2 * p + spin")
+    lines.append("                else:")
+    lines.append("                    p_so = nocc_so + 2 * (p - nocc) + spin")
+    lines.append("                if q < nocc:")
+    lines.append("                    q_so = 2 * q + spin")
+    lines.append("                else:")
+    lines.append("                    q_so = nocc_so + 2 * (q - nocc) + spin")
+    lines.append("                f_so[p_so, q_so] = f[p, q]")
+    lines.append("    return f_so")
+    lines.append("")
+    lines.append("def _build_spin_orbital_g(g_raw, nocc):")
+    lines.append("    nmo = g_raw.shape[0]")
+    lines.append("    nocc_so = 2 * nocc")
+    lines.append("    nvir_so = 2 * (nmo - nocc)")
+    lines.append("    nso = nocc_so + nvir_so")
+    lines.append("    g_phys = g_raw.transpose(0, 2, 1, 3)")
+    lines.append("    g_so = np.zeros((nso, nso, nso, nso))")
+    lines.append("    for p in range(nmo):")
+    lines.append("        for q in range(nmo):")
+    lines.append("            for r in range(nmo):")
+    lines.append("                for s in range(nmo):")
+    lines.append("                    val = g_phys[p, q, r, s]")
+    lines.append("                    for sp in (0, 1):")
+    lines.append("                        for sq in (0, 1):")
+    lines.append("                            for sr in (0, 1):")
+    lines.append("                                for ss in (0, 1):")
+    lines.append("                                    if sp != sr or sq != ss:")
+    lines.append("                                        continue")
+    lines.append("                                    if p < nocc:")
+    lines.append("                                        p_so = 2 * p + sp")
+    lines.append("                                    else:")
+    lines.append("                                        p_so = nocc_so + 2 * (p - nocc) + sp")
+    lines.append("                                    if q < nocc:")
+    lines.append("                                        q_so = 2 * q + sq")
+    lines.append("                                    else:")
+    lines.append("                                        q_so = nocc_so + 2 * (q - nocc) + sq")
+    lines.append("                                    if r < nocc:")
+    lines.append("                                        r_so = 2 * r + sr")
+    lines.append("                                    else:")
+    lines.append("                                        r_so = nocc_so + 2 * (r - nocc) + sr")
+    lines.append("                                    if s < nocc:")
+    lines.append("                                        s_so = 2 * s + ss")
+    lines.append("                                    else:")
+    lines.append("                                        s_so = nocc_so + 2 * (s - nocc) + ss")
+    lines.append("                                    g_so[p_so, q_so, r_so, s_so] = val")
+    lines.append("    g_so_as = g_so - g_so.transpose(0, 1, 3, 2)")
+    lines.append("    return g_so_as")
+    lines.append("")
 
-from . import residuals_spinorb as spinorb
+    if eom_mode:
+        lines.append("def compute_outputs(f, g, t1, t2, r1, r2, o, v):")
+        lines.append("    nocc = len(o)")
+        lines.append("    nmo = f.shape[0]")
+        lines.append("    orbspin = _orbspin(nocc, nmo)")
+        lines.append("    f_so = _build_spin_orbital_fock(f, nocc)")
+        lines.append("    g_so = _build_spin_orbital_g(g, nocc)")
+        lines.append("    t1_so = addons.spatial2spin(t1.T, orbspin).T")
+        lines.append("    t2_so = addons.spatial2spin(")
+        lines.append("        t2.transpose(2, 3, 0, 1), orbspin")
+        lines.append("    ).transpose(2, 3, 0, 1)")
+        lines.append("    r1_so = eom_rccsd.spatial2spin_singlet(r1.T, orbspin).T")
+        lines.append("    r2_so = eom_rccsd.spatial2spin_singlet(")
+        lines.append("        r2.transpose(2, 3, 0, 1), orbspin")
+        lines.append("    ).transpose(2, 3, 0, 1)")
+        lines.append("    o_so = list(range(2 * nocc))")
+        lines.append("    v_so = list(range(2 * nocc, 2 * nmo))")
+        lines.append("    outs = spinorb.compute_outputs(f_so, g_so, t1_so, t2_so, r1_so, r2_so, o_so, v_so)")
+        lines.append(f"    s1_so = outs['{r1_name}'].T")
+        lines.append(f"    s2_so = outs['{r2_name}'].transpose(2, 3, 0, 1)")
+        lines.append("    s1a, s1b = eom_uccsd.spin2spatial_eomee(s1_so, orbspin)")
+        lines.append("    s2aa, s2ab, s2bb = eom_uccsd.spin2spatial_eomee(s2_so, orbspin)")
+        lines.append("    sqrt2 = 2 ** 0.5")
+        lines.append("    s1 = (0.5 * (s1a + s1b) * sqrt2).T")
+        lines.append("    s2 = s2ab.transpose(2, 3, 0, 1) * sqrt2")
+        lines.append(f"    return {{{r1_name!r}: s1, {r2_name!r}: s2}}")
+        lines.append("")
+        lines.append(f"def compute_{r1_name}(f, g, t1, t2, r1, r2, o, v):")
+        lines.append(
+            f"    return compute_outputs(f, g, t1, t2, r1, r2, o, v)[{r1_name!r}]"
+        )
+        lines.append("")
+        lines.append(f"def compute_{r2_name}(f, g, t1, t2, r1, r2, o, v):")
+        lines.append(
+            f"    return compute_outputs(f, g, t1, t2, r1, r2, o, v)[{r2_name!r}]"
+        )
+    else:
+        lines.append("def compute_outputs(f, g, t1, t2, o, v):")
+        lines.append("    nocc = len(o)")
+        lines.append("    nmo = f.shape[0]")
+        lines.append("    orbspin = _orbspin(nocc, nmo)")
+        lines.append("    f_so = _build_spin_orbital_fock(f, nocc)")
+        lines.append("    g_so = _build_spin_orbital_g(g, nocc)")
+        lines.append("    t1_so = addons.spatial2spin(t1.T, orbspin).T")
+        lines.append("    t2_so = addons.spatial2spin(")
+        lines.append("        t2.transpose(2, 3, 0, 1), orbspin")
+        lines.append("    ).transpose(2, 3, 0, 1)")
+        lines.append("    o_so = list(range(2 * nocc))")
+        lines.append("    v_so = list(range(2 * nocc, 2 * nmo))")
+        lines.append("    outs = spinorb.compute_outputs(f_so, g_so, t1_so, t2_so, o_so, v_so)")
+        lines.append(f"    r1_so = outs['{r1_name}'].T")
+        lines.append(f"    r2_so = outs['{r2_name}'].transpose(2, 3, 0, 1)")
+        lines.append("    r1a, r1b = addons.spin2spatial(r1_so, orbspin)")
+        lines.append("    r2aa, r2ab, r2bb = addons.spin2spatial(r2_so, orbspin)")
+        lines.append("    r1 = r1a.T")
+        lines.append("    r2 = r2ab.transpose(2, 3, 0, 1)")
+        lines.append(f"    return {{{r1_name!r}: r1, {r2_name!r}: r2}}")
+        lines.append("")
+        lines.append(f"def compute_{r1_name}(f, g, t1, t2, o, v):")
+        lines.append(f"    return compute_outputs(f, g, t1, t2, o, v)[{r1_name!r}]")
+        lines.append("")
+        lines.append(f"def compute_{r2_name}(f, g, t1, t2, o, v):")
+        lines.append(f"    return compute_outputs(f, g, t1, t2, o, v)[{r2_name!r}]")
 
-AUTOGEN_SPIN_SUMMED = True
-AUTOGEN_INTERMEDIATES = {inter_flag}
-VIEW_TENSORS = ('f', 'g')
-
-def _orbspin(nocc, nmo):
-    orbspin = np.zeros(2 * nmo, dtype=int)
-    orbspin[1::2] = 1
-    return orbspin
-
-def _build_spin_orbital_fock(f, nocc):
-    nmo = f.shape[0]
-    nocc_so = 2 * nocc
-    nvir_so = 2 * (nmo - nocc)
-    f_so = np.zeros((nocc_so + nvir_so, nocc_so + nvir_so))
-    for p in range(nmo):
-        for q in range(nmo):
-            for spin in (0, 1):
-                if p < nocc:
-                    p_so = 2 * p + spin
-                else:
-                    p_so = nocc_so + 2 * (p - nocc) + spin
-                if q < nocc:
-                    q_so = 2 * q + spin
-                else:
-                    q_so = nocc_so + 2 * (q - nocc) + spin
-                f_so[p_so, q_so] = f[p, q]
-    return f_so
-
-def _build_spin_orbital_g(g_raw, nocc):
-    nmo = g_raw.shape[0]
-    nocc_so = 2 * nocc
-    nvir_so = 2 * (nmo - nocc)
-    nso = nocc_so + nvir_so
-    g_phys = g_raw.transpose(0, 2, 1, 3)
-    g_so = np.zeros((nso, nso, nso, nso))
-    for p in range(nmo):
-        for q in range(nmo):
-            for r in range(nmo):
-                for s in range(nmo):
-                    val = g_phys[p, q, r, s]
-                    for sp in (0, 1):
-                        for sq in (0, 1):
-                            for sr in (0, 1):
-                                for ss in (0, 1):
-                                    if sp != sr or sq != ss:
-                                        continue
-                                    if p < nocc:
-                                        p_so = 2 * p + sp
-                                    else:
-                                        p_so = nocc_so + 2 * (p - nocc) + sp
-                                    if q < nocc:
-                                        q_so = 2 * q + sq
-                                    else:
-                                        q_so = nocc_so + 2 * (q - nocc) + sq
-                                    if r < nocc:
-                                        r_so = 2 * r + sr
-                                    else:
-                                        r_so = nocc_so + 2 * (r - nocc) + sr
-                                    if s < nocc:
-                                        s_so = 2 * s + ss
-                                    else:
-                                        s_so = nocc_so + 2 * (s - nocc) + ss
-                                    g_so[p_so, q_so, r_so, s_so] = val
-    g_so_as = g_so - g_so.transpose(0, 1, 3, 2)
-    return g_so_as
-
-def compute_outputs(f, g, t1, t2, o, v):
-    nocc = len(o)
-    nmo = f.shape[0]
-    orbspin = _orbspin(nocc, nmo)
-    f_so = _build_spin_orbital_fock(f, nocc)
-    g_so = _build_spin_orbital_g(g, nocc)
-    t1_so = addons.spatial2spin(t1.T, orbspin).T
-    t2_so = addons.spatial2spin(t2.transpose(2, 3, 0, 1), orbspin).transpose(2, 3, 0, 1)
-    o_so = list(range(2 * nocc))
-    v_so = list(range(2 * nocc, 2 * nmo))
-    outs = spinorb.compute_outputs(f_so, g_so, t1_so, t2_so, o_so, v_so)
-    r1_so = outs['{r1_name}'].T
-    r2_so = outs['{r2_name}'].transpose(2, 3, 0, 1)
-    r1a, r1b = addons.spin2spatial(r1_so, orbspin)
-    r2aa, r2ab, r2bb = addons.spin2spatial(r2_so, orbspin)
-    r1 = r1a.T
-    r2 = r2ab.transpose(2, 3, 0, 1)
-    return {{{r1_name!r}: r1, {r2_name!r}: r2}}
-
-def compute_{r1_name}(f, g, t1, t2, o, v):
-    return compute_outputs(f, g, t1, t2, o, v)[{r1_name!r}]
-
-def compute_{r2_name}(f, g, t1, t2, o, v):
-    return compute_outputs(f, g, t1, t2, o, v)[{r2_name!r}]
-"""
-    (output_dir / "residuals.py").write_text(wrapper)
+    lines.append("")
+    (output_dir / "residuals.py").write_text("\n".join(lines) + "\n")
 
 
 def _module_path_from_dir(output_dir: Path):
@@ -1019,6 +1197,8 @@ def _module_path_from_dir(output_dir: Path):
 
 def _validate_ccsd_outputs(spec_terms, output_names):
     output_keys = {term["output_key"] for term in spec_terms}
+    if not output_keys and output_names:
+        output_keys = set(output_names.keys())
     if "X1" not in output_keys or "X2" not in output_keys:
         raise ValueError("CCSD solver requires X1 and X2 outputs in the spec.")
     r1_name = resolve_output_name("X1", output_names)
@@ -1028,7 +1208,9 @@ def _validate_ccsd_outputs(spec_terms, output_names):
 
 def emit_ccsd_solver(output_dir, spec_terms, output_names, spin_orbital=False):
     output_dir = Path(output_dir)
+    _ensure_output_package(output_dir)
     module_path = _module_path_from_dir(output_dir)
+    root_depth = _root_depth_for(output_dir)
     r1_name, r2_name = _validate_ccsd_outputs(spec_terms, output_names)
 
     lines = []
@@ -1037,7 +1219,7 @@ def emit_ccsd_solver(output_dir, spec_terms, output_names, spin_orbital=False):
     lines.append("from pathlib import Path")
     lines.append("import sys")
     lines.append("")
-    lines.append("ROOT = Path(__file__).resolve().parents[2]")
+    lines.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
     lines.append("sys.path.insert(0, str(ROOT))")
     lines.append("")
     lines.append("from generated_code.pyscf_integrals import build_h2o_631g, compute_integrals, run_scf")
@@ -1172,7 +1354,9 @@ def emit_ccsd_solver(output_dir, spec_terms, output_names, spin_orbital=False):
 
 def emit_ccsd_pyscf_test(output_dir, spec_terms, output_names, pyscf_mol=None, spin_orbital=False):
     output_dir = Path(output_dir)
+    _ensure_output_package(output_dir)
     module_path = _module_path_from_dir(output_dir)
+    root_depth = _root_depth_for(output_dir)
     _r1_name, _r2_name = _validate_ccsd_outputs(spec_terms, output_names)
 
     lines = []
@@ -1181,7 +1365,7 @@ def emit_ccsd_pyscf_test(output_dir, spec_terms, output_names, pyscf_mol=None, s
     lines.append("from pathlib import Path")
     lines.append("import sys")
     lines.append("")
-    lines.append("ROOT = Path(__file__).resolve().parents[2]")
+    lines.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
     lines.append("sys.path.insert(0, str(ROOT))")
     lines.append("")
     lines.append("from pyscf import scf, cc, gto")
@@ -1226,6 +1410,246 @@ def emit_ccsd_pyscf_test(output_dir, spec_terms, output_names, pyscf_mol=None, s
     lines.append("    main()")
     (output_dir / "pyscf_test.py").write_text("\n".join(lines) + "\n")
 
+
+def emit_eom_solver(output_dir, spec_terms, output_names, spin_orbital=False):
+    output_dir = Path(output_dir)
+    _ensure_output_package(output_dir)
+    module_path = _module_path_from_dir(output_dir)
+    root_depth = _root_depth_for(output_dir)
+    s1_name, s2_name = _validate_ccsd_outputs(spec_terms, output_names)
+
+    lines = []
+    lines.append("import numpy as np")
+    lines.append("")
+    lines.append("from pathlib import Path")
+    lines.append("import sys")
+    lines.append("")
+    lines.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
+    lines.append("sys.path.insert(0, str(ROOT))")
+    lines.append("")
+    lines.append("from pyscf import cc")
+    lines.append("from generated_code.pyscf_integrals import build_h2o_631g, compute_integrals, run_scf")
+    lines.append(f"from {module_path} import residuals")
+    lines.append("")
+    lines.append(f"SPIN_ORBITAL = {spin_orbital}")
+    lines.append("")
+    lines.append("def _abij_to_iajb(r2):")
+    lines.append("    return r2.transpose(2, 0, 3, 1)")
+    lines.append("")
+    lines.append("def _iajb_to_abij(r2):")
+    lines.append("    return r2.transpose(1, 3, 0, 2)")
+    lines.append("")
+    lines.append("def pack(r1, r2, nocc, nvirt):")
+    lines.append("    r1_ia = r1.T")
+    lines.append("    r2_iajb = _abij_to_iajb(r2)")
+    lines.append("    nov = nocc * nvirt")
+    lines.append("    mat = r2_iajb.reshape(nov, nov)")
+    lines.append("    mat = 0.5 * (mat + mat.T)")
+    lines.append("    tril = np.tril_indices(nov)")
+    lines.append("    return np.concatenate([r1_ia.ravel(), mat[tril]])")
+    lines.append("")
+    lines.append("def unpack(vec, nocc, nvirt):")
+    lines.append("    nov = nocc * nvirt")
+    lines.append("    n1 = nov")
+    lines.append("    r1_ia = vec[:n1].reshape(nocc, nvirt)")
+    lines.append("    mat = np.zeros((nov, nov))")
+    lines.append("    tril = np.tril_indices(nov)")
+    lines.append("    mat[tril] = vec[n1:]")
+    lines.append("    mat[(tril[1], tril[0])] = vec[n1:]")
+    lines.append("    r2_iajb = mat.reshape(nocc, nvirt, nocc, nvirt)")
+    lines.append("    r2 = _iajb_to_abij(r2_iajb)")
+    lines.append("    return r1_ia.T, r2")
+    lines.append("")
+    lines.append("def build_reference(mol, mf=None, t1=None, t2=None):")
+    lines.append("    if mf is None:")
+    lines.append("        mf = run_scf(mol)")
+    lines.append("    if t1 is None or t2 is None:")
+    lines.append("        mycc = cc.CCSD(mf).run()")
+    lines.append("        t1 = mycc.t1.T")
+    lines.append("        t2 = mycc.t2.transpose(2, 3, 0, 1)")
+    lines.append("    ints = compute_integrals(mol, mf=mf)")
+    lines.append("    f = ints['f']")
+    lines.append("    g_raw = ints['g_raw']")
+    lines.append("    if getattr(residuals, 'AUTOGEN_SPIN_SUMMED', None) is True:")
+    lines.append("        g = g_raw")
+    lines.append("    else:")
+    lines.append("        g = ints['g']")
+    lines.append("    nocc = ints['nocc']")
+    lines.append("    nmo = ints['nmo']")
+    lines.append("    o = list(range(nocc))")
+    lines.append("    v = list(range(nocc, nmo))")
+    lines.append("    return f, g, t1, t2, o, v")
+    lines.append("")
+    lines.append("def sigma_vector(vec, f, g, t1, t2, o, v):")
+    lines.append("    nocc = len(o)")
+    lines.append("    nvirt = len(v)")
+    lines.append("    r1, r2 = unpack(vec, nocc, nvirt)")
+    lines.append(f"    s1 = residuals.compute_{s1_name}(f, g, t1, t2, r1, r2, o, v)")
+    lines.append(f"    s2 = residuals.compute_{s2_name}(f, g, t1, t2, r1, r2, o, v)")
+    lines.append("    return pack(s1, s2, nocc, nvirt)")
+    lines.append("")
+    lines.append("def _orthonormalize(vecs, tol=1e-12):")
+    lines.append("    out = []")
+    lines.append("    for vec in vecs:")
+    lines.append("        v = vec.copy()")
+    lines.append("        for q in out:")
+    lines.append("            v -= np.dot(q.conj(), v) * q")
+    lines.append("        norm = np.linalg.norm(v)")
+    lines.append("        if norm > tol:")
+    lines.append("            out.append(v / norm)")
+    lines.append("    return out")
+    lines.append("")
+    lines.append("def davidson(matvec, diag, nroots=3, max_iter=50, tol=1e-8, max_subspace=20):")
+    lines.append("    n = diag.size")
+    lines.append("    guess_idx = np.argsort(diag)[:nroots]")
+    lines.append("    vecs = []")
+    lines.append("    for idx in guess_idx:")
+    lines.append("        v = np.zeros(n)")
+    lines.append("        v[idx] = 1.0")
+    lines.append("        vecs.append(v)")
+    lines.append("    vecs = _orthonormalize(vecs)")
+    lines.append("    avs = []")
+    lines.append("    eigvals = None")
+    lines.append("    ritz = None")
+    lines.append("    for _it in range(max_iter):")
+    lines.append("        vecs = _orthonormalize(vecs)")
+    lines.append("        while len(avs) < len(vecs):")
+    lines.append("            avs.append(matvec(vecs[len(avs)]))")
+    lines.append("        h = np.zeros((len(vecs), len(vecs)))")
+    lines.append("        for i in range(len(vecs)):")
+    lines.append("            for j in range(len(vecs)):")
+    lines.append("                h[i, j] = np.dot(vecs[i].conj(), avs[j])")
+    lines.append("        eigvals, eigvecs = np.linalg.eig(h)")
+    lines.append("        order = np.argsort(eigvals.real)")
+    lines.append("        eigvals = eigvals[order]")
+    lines.append("        eigvecs = eigvecs[:, order]")
+    lines.append("        converged = 0")
+    lines.append("        new_vecs = []")
+    lines.append("        ritz = []")
+    lines.append("        for root in range(min(nroots, eigvals.shape[0])):")
+    lines.append("            y = eigvecs[:, root]")
+    lines.append("            v = np.zeros(n)")
+    lines.append("            sigma = np.zeros(n)")
+    lines.append("            for i in range(len(vecs)):")
+    lines.append("                v += y[i] * vecs[i]")
+    lines.append("                sigma += y[i] * avs[i]")
+    lines.append("            resid = sigma - eigvals[root] * v")
+    lines.append("            r_norm = np.linalg.norm(resid)")
+    lines.append("            ritz.append(v / (np.linalg.norm(v) + 1e-12))")
+    lines.append("            if r_norm < tol:")
+    lines.append("                converged += 1")
+    lines.append("                continue")
+    lines.append("            denom = diag - eigvals[root]")
+    lines.append("            denom = np.where(abs(denom) < 1e-12, 1e-12, denom)")
+    lines.append("            q = resid / denom")
+    lines.append("            new_vecs.append(q)")
+    lines.append("        if converged >= nroots:")
+    lines.append("            break")
+    lines.append("        vecs.extend(new_vecs)")
+    lines.append("        if len(vecs) > max_subspace:")
+    lines.append("            vecs = _orthonormalize(ritz)")
+    lines.append("            avs = []")
+    lines.append("    return eigvals[:nroots]")
+    lines.append("")
+    lines.append("def solve_eom_ccsd(mol=None, mf=None, t1=None, t2=None, nroots=3, max_iter=50, tol=1e-8):")
+    lines.append("    if mol is None:")
+    lines.append("        mol = build_h2o_631g()")
+    lines.append("    if SPIN_ORBITAL:")
+    lines.append("        raise ValueError('EE-EOM-CCSD solver is spin-summed RHF only.')")
+    lines.append("    if getattr(residuals, 'AUTOGEN_SPIN_SUMMED', None) is not True:")
+    lines.append("        raise ValueError('EE-EOM-CCSD solver requires spin-summed residuals.')")
+    lines.append("    f, g, t1, t2, o, v = build_reference(mol, mf=mf, t1=t1, t2=t2)")
+    lines.append("    eps = np.diag(f)")
+    lines.append("    eps_occ = eps[o]")
+    lines.append("    eps_virt = eps[v]")
+    lines.append("    denom_ai = eps_virt[:, None] - eps_occ[None, :]")
+    lines.append("    denom_abij = (")
+    lines.append("        eps_virt[:, None, None, None]")
+    lines.append("        + eps_virt[None, :, None, None]")
+    lines.append("        - eps_occ[None, None, :, None]")
+    lines.append("        - eps_occ[None, None, None, :]")
+    lines.append("    )")
+    lines.append("    denom_iajb = denom_abij.transpose(2, 0, 3, 1)")
+    lines.append("    nov = len(o) * len(v)")
+    lines.append("    denom_mat = denom_iajb.reshape(nov, nov)")
+    lines.append("    tril = np.tril_indices(nov)")
+    lines.append("    diag = np.concatenate([denom_ai.T.ravel(), denom_mat[tril]])")
+    lines.append("    matvec = lambda vec: sigma_vector(vec, f, g, t1, t2, o, v)")
+    lines.append("    eigvals = davidson(matvec, diag, nroots=nroots, max_iter=max_iter, tol=tol)")
+    lines.append("    return np.real_if_close(eigvals)")
+    lines.append("")
+    lines.append("def main():")
+    lines.append("    eigvals = solve_eom_ccsd()")
+    lines.append("    print('EE-EOM-CCSD excitation energies:', eigvals)")
+    lines.append("")
+    lines.append("if __name__ == '__main__':")
+    lines.append("    main()")
+    (output_dir / "eom_solver.py").write_text("\n".join(lines) + "\n")
+
+
+def emit_eom_pyscf_test(output_dir, spec_terms, output_names, pyscf_mol=None, spin_orbital=False):
+    output_dir = Path(output_dir)
+    _ensure_output_package(output_dir)
+    module_path = _module_path_from_dir(output_dir)
+    root_depth = _root_depth_for(output_dir)
+    _s1_name, _s2_name = _validate_ccsd_outputs(spec_terms, output_names)
+
+    lines = []
+    lines.append("import numpy as np")
+    lines.append("")
+    lines.append("from pathlib import Path")
+    lines.append("import sys")
+    lines.append("")
+    lines.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
+    lines.append("sys.path.insert(0, str(ROOT))")
+    lines.append("")
+    lines.append("from pyscf import scf, cc, gto")
+    lines.append("from pyscf.cc import eom_rccsd")
+    lines.append(f"from {module_path}.eom_solver import solve_eom_ccsd")
+    lines.append(f"from {module_path} import residuals")
+    lines.append("")
+    atom = "H 0 0 0; H 0 0 0.74"
+    basis = "sto-3g"
+    unit = "Angstrom"
+    charge = 0
+    spin = 0
+    if pyscf_mol:
+        atom = pyscf_mol.get("atom", atom)
+        basis = pyscf_mol.get("basis", basis)
+        unit = pyscf_mol.get("unit", unit)
+        charge = pyscf_mol.get("charge", charge)
+        spin = pyscf_mol.get("spin", spin)
+    lines.append("def build_molecule():")
+    lines.append("    return gto.M(")
+    lines.append(f"        atom={atom!r},")
+    lines.append(f"        basis={basis!r},")
+    lines.append(f"        unit={unit!r},")
+    lines.append(f"        charge={charge},")
+    lines.append(f"        spin={spin},")
+    lines.append("    )")
+    lines.append("")
+    lines.append("def main():")
+    lines.append("    if getattr(residuals, 'AUTOGEN_SPIN_SUMMED', None) is not True:")
+    lines.append("        raise ValueError('EE-EOM-CCSD test requires spin-summed residuals.')")
+    lines.append("    mol = build_molecule()")
+    lines.append("    mf = scf.RHF(mol).run()")
+    lines.append("    mycc = cc.CCSD(mf).run()")
+    lines.append("    e_pyscf, _vecs = eom_rccsd.EOMEESinglet(mycc).kernel(nroots=3)")
+    lines.append("    e_autogen = solve_eom_ccsd(mol=mol, mf=mf, t1=mycc.t1.T, t2=mycc.t2.transpose(2, 3, 0, 1), nroots=3)")
+    lines.append("    e_pyscf = np.array(e_pyscf)")
+    lines.append("    e_autogen = np.array(e_autogen)")
+    lines.append("    e_pyscf = np.sort(e_pyscf)")
+    lines.append("    e_autogen = np.sort(e_autogen)")
+    lines.append("    diff = np.max(np.abs(e_pyscf[:len(e_autogen)] - e_autogen))")
+    lines.append("    print('PySCF EE-EOM-CCSD:', e_pyscf)")
+    lines.append("    print('Autogen EE-EOM-CCSD:', e_autogen)")
+    lines.append("    print('abs diff:', diff)")
+    lines.append("    assert diff < 1e-6")
+    lines.append("")
+    lines.append("if __name__ == '__main__':")
+    lines.append("    main()")
+    (output_dir / "eom_pyscf_test.py").write_text("\n".join(lines) + "\n")
+
 def make_name(list_char_op):
     return "".join(name.lower() for name in list_char_op)
 
@@ -1253,6 +1677,8 @@ def emit_einsum_code(list_char_op, terms, output_path):
     # Emit a runnable Python script for a specific operator list.
     expr_name = make_name(list_char_op)
     func_name = f"compute_{expr_name}"
+    root_depth = _root_depth_for(output_path.parent)
+    _ensure_output_package(output_path.parent)
     labels_map = collect_tensor_labels(terms)
     tensor_order = ["g", "f", "t1", "t2", "d1", "d2", "x1", "x2"]
     needed = [name for name in tensor_order if name in labels_map]
@@ -1263,7 +1689,7 @@ def emit_einsum_code(list_char_op, terms, output_path):
     lines.append("from pathlib import Path")
     lines.append("import sys")
     lines.append("")
-    lines.append("ROOT = Path(__file__).resolve().parents[1]")
+    lines.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
     lines.append("sys.path.insert(0, str(ROOT))")
     lines.append("")
     special_f1t1 = list_char_op == ["F1", "T1"]
@@ -1399,20 +1825,22 @@ def emit_einsum_code(list_char_op, terms, output_path):
 
 def emit_ccsd_energy(output_path):
     # Emit a convenience script that sums the CCSD energy pieces.
+    _ensure_output_package(output_path.parent)
     lines = []
     lines.append("import numpy as np")
     lines.append("")
     lines.append("from pathlib import Path")
     lines.append("import sys")
     lines.append("")
-    lines.append("ROOT = Path(__file__).resolve().parents[1]")
+    root_depth = _root_depth_for(output_path.parent)
+    lines.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
     lines.append("sys.path.insert(0, str(ROOT))")
     lines.append("")
     lines.append("# CCSD energy driver that matches PySCF's spatial-orbital energy formula.")
     lines.append("from generated_code.pyscf_integrals import build_h2o_631g, compute_ccsd_amplitudes_ijab, compute_integrals, run_scf")
-    lines.append("from generated_code.f1t1_einsum import compute_f1t1")
-    lines.append("from generated_code.v2t1t1_einsum import compute_v2t1t1")
-    lines.append("from generated_code.v2t2_einsum import compute_v2t2")
+    lines.append("from generated_code.methods.ccsd.f1t1_einsum import compute_f1t1")
+    lines.append("from generated_code.methods.ccsd.v2t1t1_einsum import compute_v2t1t1")
+    lines.append("from generated_code.methods.ccsd.v2t2_einsum import compute_v2t2")
     lines.append("")
     lines.append("")
     lines.append("def main():")
@@ -1449,7 +1877,9 @@ def emit_ccsd_energy(output_path):
 
 
 def emit_ccsd_amplitude(output_dir, mode: str = "runtime", subset: str = "both", quiet: bool = False):
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = Path(output_dir)
+    _ensure_output_package(output_dir)
+    root_depth = _root_depth_for(output_dir)
     subset = subset.lower()
     if subset not in {"both", "x1", "x2"}:
         raise ValueError(f"Unsupported CCSD amplitude subset: {subset}")
@@ -1470,7 +1900,7 @@ def emit_ccsd_amplitude(output_dir, mode: str = "runtime", subset: str = "both",
         lines.append(f"QUIET = {quiet}")
         lines.append(f"SUBSET = '{subset}'")
         lines.append("")
-        lines.append("ROOT = Path(__file__).resolve().parents[2]")
+        lines.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
         lines.append("SRC = ROOT / 'src'")
         lines.append("sys.path.insert(0, str(SRC))")
         lines.append("")
@@ -1893,11 +2323,11 @@ def emit_ccsd_amplitude(output_dir, mode: str = "runtime", subset: str = "both",
     solver.append("from pathlib import Path")
     solver.append("import sys")
     solver.append("")
-    solver.append("ROOT = Path(__file__).resolve().parents[2]")
+    solver.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
     solver.append("sys.path.insert(0, str(ROOT))")
     solver.append("")
     solver.append("from generated_code.pyscf_integrals import build_h2o_631g, compute_integrals, run_scf")
-    solver.append("from generated_code.ccsd_amplitude import residuals as residuals")
+    solver.append("from generated_code.methods.ccsd.ccsd_amplitude import residuals as residuals")
     solver.append("")
     solver.append("def mp2_init(f, g, o, v):")
     solver.append("    # MP2-like starting amplitudes in spatial-orbital form.")
@@ -2002,10 +2432,10 @@ def emit_ccsd_amplitude(output_dir, mode: str = "runtime", subset: str = "both",
     energy.append("from pathlib import Path")
     energy.append("import sys")
     energy.append("")
-    energy.append("ROOT = Path(__file__).resolve().parents[2]")
+    energy.append(f"ROOT = Path(__file__).resolve().parents[{root_depth}]")
     energy.append("sys.path.insert(0, str(ROOT))")
     energy.append("")
-    energy.append("from generated_code.ccsd_amplitude.solver import solve_ccsd")
+    energy.append("from generated_code.methods.ccsd.ccsd_amplitude.solver import solve_ccsd")
     energy.append("# Driver that prints the converged CCSD correlation energy.")
     energy.append("")
     energy.append("def main():")
@@ -2098,12 +2528,27 @@ def main():
             spin_orbital,
             spin_adapted,
         ) = parse_spec_terms(spec)
+        prebuilt_terms = None
+        if spec.get("EOM_BCH"):
+            output_keys = tuple(output_names.keys()) if output_names else ("X1", "X2")
+            t1_labels = tuple(spec.get("EOM_T1_LABELS", ("T1", "T11", "T12", "T13")))
+            t2_labels = tuple(spec.get("EOM_T2_LABELS", ("T2", "T21")))
+            h_ops = tuple(spec.get("EOM_H_OPS", ("F1", "V2")))
+            max_order = int(spec.get("EOM_MAX_ORDER", 4))
+            prebuilt_terms = build_eom_bch_terms(
+                max_order=max_order,
+                t1_labels=t1_labels,
+                t2_labels=t2_labels,
+                h_ops=h_ops,
+                outputs=output_keys,
+                quiet=quiet,
+            )
         if tasks_override is not None:
             tasks = [task.strip() for task in tasks_override.split(",") if task.strip()]
         if output_override is not None:
             output_dir = output_override
         if output_dir is None:
-            output_dir = ROOT / "generated_code" / Path(spec_path).stem
+            output_dir = METHODS_DIR / Path(spec_path).stem
         else:
             output_dir = Path(output_dir)
             if not output_dir.is_absolute():
@@ -2117,6 +2562,8 @@ def main():
             mode=mode,
             quiet=quiet,
             spin_adapted=spin_adapted,
+            prebuilt_terms=prebuilt_terms,
+            eom_mode=bool(spec.get("EOM_BCH")),
         )
         tasks = [task.lower() for task in tasks]
         if "all" in tasks:
@@ -2136,33 +2583,51 @@ def main():
                 pyscf_mol=pyscf_mol,
                 spin_orbital=spin_orbital,
             )
+        if "eom_solver" in tasks:
+            emit_eom_solver(
+                output_dir,
+                terms,
+                output_names,
+                spin_orbital=spin_orbital,
+            )
+        if "eom_pyscf_test" in tasks:
+            emit_eom_pyscf_test(
+                output_dir,
+                terms,
+                output_names,
+                pyscf_mol=pyscf_mol,
+                spin_orbital=spin_orbital,
+            )
         print(f"Wrote {output_dir}")
         return
     if list_char_op == ["CCSD_ENERGY"]:
         # Ensure component scripts exist before generating the CCSD driver.
+        ccsd_dir = METHODS_DIR / "ccsd"
+        _ensure_output_package(ccsd_dir)
         for ops in (["F1", "T1"], ["V2", "T1", "T1"], ["V2", "T2"]):
             terms = build_terms(ops, quiet=quiet)
             expr_name = make_name(ops)
-            comp_path = ROOT / "generated_code" / f"{expr_name}_einsum.py"
+            comp_path = ccsd_dir / f"{expr_name}_einsum.py"
             emit_einsum_code(ops, terms, comp_path)
-        output_path = ROOT / "generated_code" / "ccsd_energy.py"
+        output_path = ccsd_dir / "ccsd_energy.py"
         emit_ccsd_energy(output_path)
         print(f"Wrote {output_path}")
         return
     if list_char_op == ["CCSD_AMPLITUDE"]:
         if mode is None:
             mode = "runtime"
+        ccsd_amp_dir = METHODS_DIR / "ccsd" / "ccsd_amplitude"
         emit_ccsd_amplitude(
-            ROOT / "generated_code" / "ccsd_amplitude",
+            ccsd_amp_dir,
             mode=mode,
             subset=subset,
             quiet=quiet,
         )
-        print(f"Wrote {ROOT / 'generated_code' / 'ccsd_amplitude'}")
+        print(f"Wrote {ccsd_amp_dir}")
         return
     terms = build_terms(list_char_op, quiet=quiet)
     expr_name = make_name(list_char_op)
-    output_path = ROOT / "generated_code" / f"{expr_name}_einsum.py"
+    output_path = GENERATED_DIR / f"{expr_name}_einsum.py"
     emit_einsum_code(list_char_op, terms, output_path)
     print(f"Wrote {output_path}")
 

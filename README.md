@@ -84,16 +84,19 @@ Use these package paths:
 	- `AUTOGEN_NUMBA_CANDS_CACHE=0 python debug.py`
 - Resize typed candidate cache (LRU, default 64):
 	- `AUTOGEN_NUMBA_CANDS_CACHE_SIZE=128 python debug.py`
-- Generate einsum scripts (writes to `generated_code/`):
+- Generate einsum scripts (writes to `generated_code/`, method outputs under `generated_code/methods/`):
 	- `python scripts/gen_einsum.py V2 T1 T1`
 	- `python scripts/gen_einsum.py V2 T2`
 	- `python scripts/gen_einsum.py F1 T1`
 	- `python scripts/gen_einsum.py CCSD_ENERGY`
 	- `python scripts/gen_einsum.py CCSD_AMPLITUDE`
+	- `python scripts/gen_einsum.py --spec method_inputs/eom_ccsd/ee_eom_ccsd_spec.py --intermediates --quiet`
 - Run fast tests:
 	- `pytest`
 - Run the slow CCSD integration test:
 	- `RUN_SLOW=1 pytest -k ccsd`
+- Run the slow EOM-CCSD integration test:
+	- `RUN_SLOW=1 pytest -k eom_ccsd`
 
 ## Build
 

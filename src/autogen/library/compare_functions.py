@@ -94,7 +94,12 @@ def permutation_check(term1,term2):
                 #print 'returning case of same operator different names'
                 return 1
         #Two terms are permutations when the two same type of operators are not equivalent
-        if len(map1_open[0])>2 and len(map2_open[1])>2 :
+        if (
+            len(map1_open[0]) > 2
+            and len(map2_open[1]) > 2
+            and len(map1_open[2]) > 2
+            and len(map2_open[3]) > 2
+        ):
             eq12=0
 
             #print 'case indices12',int(map1_open[0][2]),int(map2_open[0][2]),int(map1_open[1][2]),int(map2_open[1][2])
@@ -116,7 +121,12 @@ def permutation_check(term1,term2):
                 if np.array_equal(term1.imatrix[first,:],term1.imatrix[second,:]) and np.array_equal(term1.amatrix[first,:],term1.amatrix[second,:]):
                     eq12=1
         eq34=1
-        if len(map1_open[2])>2 and len(map2_open[3])>2 :
+        if (
+            len(map1_open[2]) > 2
+            and len(map2_open[3]) > 2
+            and len(map2_open[2]) > 2
+            and len(map1_open[3]) > 2
+        ):
             eq34=0
             #print 'case indices34',int(map1_open[2][2]),int(map2_open[2][2]),int(map1_open[3][2]),int(map2_open[3][2])
             if int(map1_open[2][2])==int(map2_open[2][2]) and  int(map1_open[3][2])==int(map2_open[3][2]):

@@ -280,7 +280,7 @@ def _fast_compare_impl(term1, term2):
             create_matrices(term2)
         return cmp_test(term1, term2)
     from . import compare as cmp_full
-    return cmp_full.compare(term1, term2)
+    return cmp_full.compare_fast(term1, term2)
 
 
 def fast_compare(term1, term2):

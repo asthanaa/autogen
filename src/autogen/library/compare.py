@@ -1,4 +1,5 @@
 import copy
+import os
 from . import functions
 from autogen.pkg import parity
 class ind(object):
@@ -9,13 +10,79 @@ class ind(object):
         self.pair=self
 
 
+def _get_level5_mode():
+    mode = os.getenv("AUTOGEN_COMPARE_LEVEL5", "cached").lower().strip()
+    if mode not in ("cached", "matrix"):
+        return "cached"
+    return mode
+
+
 class _CoeffTerm(object):
-    __slots__ = ("coeff_list", "fac", "_juggle_cache")
+    __slots__ = ("coeff_list", "fac", "_juggle_cache", "_coeff_ind_cache")
 
     def __init__(self, coeff_list, fac):
         self.coeff_list = coeff_list
         self.fac = fac
         self._juggle_cache = None
+        self._coeff_ind_cache = None
+
+
+class _CoeffTermView(object):
+    __slots__ = (
+        "coeff_list",
+        "large_op_list",
+        "map_org",
+        "sum_list",
+        "st",
+        "fac",
+        "imatrix",
+        "amatrix",
+        "_matrices_ready",
+    )
+
+    def __init__(self, base_term, coeff_list, fac):
+        self.coeff_list = [list(c) for c in coeff_list]
+        self.large_op_list = list(base_term.large_op_list)
+        self.map_org = list(base_term.map_org)
+        self.sum_list = base_term.sum_list
+        self.st = base_term.st
+        self.fac = fac
+        self.imatrix = None
+        self.amatrix = None
+        self._matrices_ready = False
+
+    def isa(self, x):
+        if x >= "a" and x <= "h":
+            return 1
+        if len(x) == 2 and x[0] >= "a" and x[0] <= "h":
+            return 1
+        return 0
+
+    def isi(self, x):
+        if x >= "i" and x <= "n":
+            return 1
+        if len(x) == 2 and x[0] >= "i" and x[0] <= "n":
+            return 1
+        return 0
+
+    def isp(self, x):
+        if x >= "p" and x <= "t":
+            return 1
+        if len(x) == 2 and x[0] >= "p" and x[0] <= "t":
+            return 1
+        return 0
+
+    def is_dummy(self, x):
+        return 1 if x in self.sum_list else 0
+
+    def type(self, x):
+        if self.isa(x):
+            return "a"
+        if self.isi(x):
+            return "i"
+        if self.isp(x):
+            return "p"
+        return ""
 
 
 def _build_coeff_ind(term, map_org, cache_attr):
@@ -37,6 +104,23 @@ def _build_coeff_ind(term, map_org, cache_attr):
             else:
                 c1[ij].pair = c1[ij - len(c1) // 2]
     setattr(term, cache_attr, coeff)
+    return coeff
+
+
+def _build_coeff_ind_for_list(coeff_list, map_org):
+    coeff = []
+    for c2, coeff_vals in enumerate(coeff_list):
+        if c2 == len(map_org):
+            parent = "E"
+        else:
+            parent = map_org[c2].name
+        coeff.append([ind(i2, 0, parent) for i2 in coeff_vals])
+    for c1 in coeff:
+        for ij in range(len(c1)):
+            if ij < len(c1) // 2:
+                c1[ij].pair = c1[ij + len(c1) // 2]
+            else:
+                c1[ij].pair = c1[ij - len(c1) // 2]
     return coeff
 
 
@@ -332,12 +416,16 @@ def level4(term1, term2, final_terms):
         if len(term2.coeff_list[c2]) >= 4:
             positions.append(c2)
     if not positions:
-        return
+        return final_terms
     positions = tuple(positions)
     cache = getattr(term2, "_level4_cache", None)
     if cache is None:
         cache = {}
         term2._level4_cache = cache
+    combined_cache = getattr(term2, "_level4_terms", None)
+    if combined_cache is None:
+        combined_cache = {}
+        term2._level4_terms = combined_cache
     extras = cache.get(positions)
     if extras is None:
         base_terms = getattr(term2, "_level3_variants", final_terms)
@@ -351,7 +439,12 @@ def level4(term1, term2, final_terms):
             working.extend(tmp_terms1)
             extras.extend(tmp_terms1)
         cache[positions] = extras
-    final_terms.extend(extras)
+    combined = combined_cache.get(positions)
+    if combined is None:
+        combined = list(final_terms)
+        combined.extend(extras)
+        combined_cache[positions] = combined
+    return combined
 
 
 
@@ -445,25 +538,7 @@ def level5(term1, term2, final_terms):
     #pair the coefficients to their partners in the indices class of all terms (main terms and copies of term2)
     #arrowwork decides if the two terms are the same and the sign is given by the fac of the term2 copy.
     coeff1 = _build_coeff_ind(term1, term1.map_org, "_coeff_ind_cache")
-    final_coeffs = []
     #print '---------------------coeff1 length', len(coeff1)
-    #build class ind for term2 in final terms
-    for termx in final_terms:
-        coeff2 = []
-        for c2, coeff_list in enumerate(termx.coeff_list):
-            if c2 == len(term2.map_org):
-                parent = "E"
-            else:
-                parent = term2.map_org[c2].name
-            coeff2.append([ind(i2, 0, parent) for i2 in coeff_list])
-        # Pair indices within each coefficient list.
-        for c1 in coeff2:
-            for ij in range(len(c1)):
-                if ij < len(c1) // 2:
-                    c1[ij].pair = c1[ij + len(c1) // 2]
-                else:
-                    c1[ij].pair = c1[ij - len(c1) // 2]
-        final_coeffs.append(coeff2)
     flag=0
     '''
     for item in coeff1:
@@ -472,14 +547,67 @@ def level5(term1, term2, final_terms):
         print '\n'
     print '------'
     '''
-    for c2,termx in zip(final_coeffs,final_terms):
+    for termx in final_terms:
+        coeff2 = termx._coeff_ind_cache
+        if coeff2 is None:
+            coeff2 = _build_coeff_ind_for_list(termx.coeff_list, term2.map_org)
+            termx._coeff_ind_cache = coeff2
         unsee(coeff1)
-        unsee(c2)
+        unsee(coeff2)
         #print 'comparing for arrow',term1.coeff_list, termx.coeff_list
-        if arrowwork(term1, term2,coeff1, c2)==1:
+        if arrowwork(term1, term2, coeff1, coeff2) == 1:
             flag=termx.fac
             #print 'match', term1.coeff_list, '"',term2.coeff_list,',',termx.coeff_list,',',termx.fac
             break
+    return flag
+
+
+def level5_matrix(term1, term2, final_terms):
+    try:
+        from .compare_test import compare as cmp_test
+        from .compare_test import create_matrices
+    except Exception:
+        return level5(term1, term2, final_terms)
+
+    if not getattr(term1, "_matrices_ready", False):
+        create_matrices(term1)
+
+    match_fac = None
+    view_cache = {}
+    for termx in final_terms:
+        key = tuple(tuple(c) for c in termx.coeff_list)
+        eq = view_cache.get(key)
+        if eq is None:
+            view = _CoeffTermView(term2, termx.coeff_list, termx.fac)
+            create_matrices(view)
+            eq = cmp_test(term1, view) == 1
+            view_cache[key] = eq
+        if eq:
+            if match_fac is None:
+                match_fac = termx.fac
+            elif match_fac != termx.fac:
+                return level5(term1, term2, final_terms)
+    if match_fac is None:
+        return 0
+    return match_fac
+
+
+def compare_fast(term1, term2):
+    flag = 1
+    if flag == 1:
+        flag = level1(term1, term2)
+    if flag != 0:
+        flag = level2(term1, term2)
+    if flag != 0:
+        flag, final_terms = level3(term1, term2)
+    if flag != 0:
+        final_terms = level4(term1, term2, final_terms)
+    if flag != 0:
+        if _get_level5_mode() == "matrix":
+            flag = level5_matrix(term1, term2, final_terms)
+        else:
+            flag = level5(term1, term2, final_terms)
+    final_terms = []
     return flag
 
 
@@ -497,7 +625,7 @@ def compare(term1, term2):
         #print 'flag level 3 :', flag
         #print len(final_terms)
     if flag!=0:
-        level4(term1,term2, final_terms)
+        final_terms = level4(term1,term2, final_terms)
         #print 'flag level 4 :', flag
 
         #print len(final_terms)

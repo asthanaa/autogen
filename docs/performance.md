@@ -16,6 +16,13 @@ The reducer now uses a two-stage bucketization:
 2) matrix signature inside buckets with >1 term.
 This shrinks compare-heavy buckets before invoking full comparisons.
 
+Level-5 compare now caches the coefficient index graph for each juggled term to
+avoid rebuilding `ind` objects across repeated compares. This keeps the
+arrowwork path fast without changing comparison semantics.
+
+- `AUTOGEN_COMPARE_LEVEL5=cached` (default) uses the cached arrowwork path.
+- `AUTOGEN_COMPARE_LEVEL5=matrix` attempts a matrix-based match (experimental).
+
 ## Contraction caching
 
 Two caching layers reduce repeated contraction work:

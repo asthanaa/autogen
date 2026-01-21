@@ -1,6 +1,6 @@
 """CCSD amplitude spec for intermediate-form residual generation."""
 
-OUTPUT_DIR = "generated_code/ccsd_amplitude"
+OUTPUT_DIR = "generated_code/methods/ccsd/ccsd_amplitude"
 OUTPUTS = {"X1": "r1", "X2": "r2"}
 TASKS = ["solver", "pyscf_test"]
 PYSCF_MOL = {

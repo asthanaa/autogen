@@ -1,0 +1,1 @@
+"""CCSD method input specs."""
