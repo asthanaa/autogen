@@ -1,0 +1,256 @@
+{
+  "anchor": {
+    "energy_tolerance_eh": 1e-08,
+    "expected_pav_energy_eh": -107.65060143314642,
+    "expected_qpccsd_energy_eh": -107.65269549964435,
+    "failures": [],
+    "fixture": "tests/fixtures/n2_sto3g_cas66_r1p10_certified.json",
+    "fixture_sha256": "f0ebb117c7d3a91e94d868f461e5b26450ec9dfaf4251b6f72cdc47b12a35d99",
+    "pav_energy_error_eh": 6.650680006714538e-12,
+    "qpccsd_energy_error_eh": 2.4928681341407355e-10,
+    "valid": true
+  },
+  "case_id": "n2-sto3g-cas66-r1p10-fresh-end-to-end",
+  "clean_source": {
+    "autogen_file": "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/src/autogen/__init__.py",
+    "clean_src_first_on_pythonpath": true,
+    "source_file_count": 32,
+    "source_identity_sha256": "26c0a6bf459c198dd2715fe3d062085ac706969bbe282d7b8b88df2d9faeb9b7",
+    "source_root": "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/src",
+    "source_tree_sha256": "8d37eb3ec1e18651d180c14dad11602e34f3e83dfd47c3794524a5255970f38e",
+    "workflow_file": "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/src/autogen/qpccsd/workflow.py"
+  },
+  "completed_at_utc": "2026-07-20T14:39:40.635069+00:00",
+  "environment": {
+    "blas_threads": 1,
+    "numpy": "1.26.4",
+    "pyscf": "2.13.0",
+    "python": "3.12.13",
+    "python_no_user_site": true,
+    "pythonhashseed": 0,
+    "scipy": "1.17.1",
+    "threadpoolctl": "3.6.0"
+  },
+  "execution_policy": {
+    "architecture": "aarch64",
+    "hostname": "medoralogin",
+    "laptop_calculation": false,
+    "molecular_calculation_site": "medora",
+    "ndsu_calculation": false,
+    "talon_calculation": false
+  },
+  "fresh_input_contract": {
+    "basis": "sto-3g",
+    "cas_electrons": 6,
+    "cas_orbitals": 6,
+    "config": {
+      "name": "n2_sto3g.toml",
+      "sha256": "ad4eb4939ffe5654c10bcbc453a7def91c16854d22dc8baeede1ea40b2945d41"
+    },
+    "distance_angstrom": 1.1,
+    "frozen_n1s": true,
+    "initial_amplitudes": null,
+    "qpccsd_started_from_zero_amplitudes": true,
+    "reference_built_fresh_from_casscf": true,
+    "reference_checkpoint": null
+  },
+  "launcher_command": [
+    "scripts/remote/run_config.sh",
+    "configs/n2_sto3g.toml",
+    "--output",
+    "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/results/n2_sto3g_r1.10_fresh_end_to_end_v1/production_result.json",
+    "--amplitudes-output",
+    "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/results/n2_sto3g_r1.10_fresh_end_to_end_v1/production_result.amplitudes.npz"
+  ],
+  "reference": {
+    "active_natural_occupations": [
+      1.9296669317553377,
+      1.9296669317553374,
+      1.9826957838128696,
+      0.07016450189558301,
+      0.07016450189558289,
+      0.017641348885289298
+    ],
+    "array_fingerprints_sha256": {
+      "active_rdm1": "6c957c73cbef8836291d5b4cc5d82439c523dfb29a092df29d807c1253fafef1",
+      "active_rdm2": "144af062b01d8e180f3efb2bda8b1deaae4174522c79f45c6057b4908236a51a",
+      "mo_coeff": "7bc31111b98587250a668dea1caf95628b2ea2b9a97af32e812ceecbdce1825a"
+    },
+    "bogoliubov_canonical_errors": [
+      2.220446049250313e-16,
+      0.0
+    ],
+    "casscf_energy_diagnostic_eh": -107.638233474025,
+    "global_number_setting_scale": 22.841838734256978,
+    "mode": "projected_agp_2rdm",
+    "protocol": "cas-natural-orbital-signed-projected-agp-pair-transfer-fit-v1",
+    "reconstruction_metrics": {
+      "active_average_number_error": 1.758593271006248e-13,
+      "fit_cost": 0.01861003010044869,
+      "fit_message": "`ftol` termination condition is satisfied.",
+      "fit_success": true,
+      "pair_rdm2_max_abs_error": 0.1299823373282349,
+      "pair_subspace_fidelity": 0.9942307602558862,
+      "rdm1_max_abs_error": 0.04080702400276148
+    },
+    "relative_signed_geminals": [
+      0.1487078074357003,
+      0.14870780674855125,
+      1.0,
+      -0.012837673929240193,
+      -0.012837673984177848,
+      -0.002429568292748646
+    ],
+    "scaled_signed_geminals": [
+      3.3967597559712073,
+      3.396759740275459,
+      22.841838734256978,
+      -0.2932360776146796,
+      -0.29323607886955666,
+      -0.05549580713682862
+    ],
+    "source_rdm_metadata": {
+      "complete_active_rdm2_reconstructed": false,
+      "pair_transfer_block": "active_rdm2[p,q,p,q]",
+      "rdm1": "spin-summed spatial <p^dagger q>",
+      "rdm2": "PySCF spin-free convention",
+      "reference_protocol": "cas-natural-orbital-signed-projected-agp-pair-transfer-fit-v1"
+    }
+  },
+  "remote_outputs": {
+    "anchor_validation.json": {
+      "sha256": "e62fdb3c56e4a620a5fe7f5266687cfdcab6cd99c38504ee14ac8ffcad97af35",
+      "size_bytes": 198
+    },
+    "autogen_qpccsd-0.1.0-py3-none-any.whl": {
+      "sha256": "01f557eac763ddaa16914b5aedf030ff6451e16e373380c919a29b4ed5b39055",
+      "size_bytes": 153650
+    },
+    "production_result.amplitudes.npz": {
+      "sha256": "38dcdb7b84e05f9d17614c8efc06d1fe3277498417de518179bd8f201315f885",
+      "size_bytes": 11074
+    },
+    "production_result.json": {
+      "sha256": "528fbecc996d2be204787f1071f17dda647d313bde43d536a22bc6ba37a08d72",
+      "size_bytes": 5728
+    },
+    "pytest_full_with_molecular.txt": {
+      "sha256": "ff9b98bc210ba978bdcfda47982c3c9833cdcfc3bfc99c87038a0c97b41c7101",
+      "size_bytes": 99
+    },
+    "pytest_non_molecular.txt": {
+      "sha256": "4ab08f29476f0939107f3981ad98e4f68c21858b9b024a0557e5179d75d4d64a",
+      "size_bytes": 113
+    },
+    "run.stderr.log": {
+      "sha256": "8b233a2e2d01692a5671c6c62fdb811be3f620baf128aa39731d7b4677385937",
+      "size_bytes": 1080
+    },
+    "run.stdout.json": {
+      "sha256": "24f46ff9ab113835015b598865008297271bf68782800da6a2d2fd6934b435f8",
+      "size_bytes": 4840
+    },
+    "source_identity.json": {
+      "sha256": "26c0a6bf459c198dd2715fe3d062085ac706969bbe282d7b8b88df2d9faeb9b7",
+      "size_bytes": 6257
+    },
+    "wheel_build.log": {
+      "sha256": "60670a29e25dbd551882908670f888d82f37a84b7e5b724b6f1052adf5e76ff4",
+      "size_bytes": 871
+    },
+    "wheel_import_identity.txt": {
+      "sha256": "868926f5702c6507271fac67d0ec98066240d6fdddf6f68872fc00c56c7a0c42",
+      "size_bytes": 301
+    },
+    "wheel_install.log": {
+      "sha256": "8f3e1687e9f9cc02f587cb4e83010f6447848b15cacf62d7aef20b4bbfdb99a8",
+      "size_bytes": 190
+    },
+    "wheel_sha256.txt": {
+      "sha256": "9c9528f9ab7260908c90764b3316b4dc4e00104ce00a1a0e6e4744a8fd78eed8",
+      "size_bytes": 220
+    },
+    "wheel_show_defaults.json": {
+      "sha256": "724b925dd5624bb49fbd6fe8044113d00ff36e2c88ee9dec5bec8d4825183bbf",
+      "size_bytes": 2334
+    }
+  },
+  "remote_project": "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project",
+  "remote_result_directory": "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/results/n2_sto3g_r1.10_fresh_end_to_end_v1",
+  "result": {
+    "active_pair_coordinates": 6,
+    "active_quadruple_coordinates": 21,
+    "certification": {
+      "certified": true,
+      "diagnostic_only": false,
+      "fresh_terminal_unshifted_residual": true,
+      "pav_from_uncertified_amplitudes": false,
+      "pav_numerically_validated": true,
+      "raw_certified": true,
+      "reference_canonical_tolerance": 1e-12,
+      "reference_finite_and_canonical": true
+    },
+    "pair_coordinates": 8,
+    "pav_energy_eh": -107.65060143315307,
+    "pav_grid_error_eh": 5.851493029736202e-19,
+    "pav_imaginary_energy_eh": 0.0,
+    "pav_imaginary_validation_error_eh": 1.2146161493856798e-18,
+    "projection_grid_size": 9,
+    "projection_validation_grid_size": 18,
+    "qpccsd_energy_eh": -107.65269549939507,
+    "qpccsd_evaluator_calls": 32,
+    "qpccsd_iterations": 27,
+    "qpccsd_residual_norm": 9.33506029421327e-10,
+    "quadruple_coordinates": 57,
+    "schema": "projected-agp-fullspace-qpccsd-pav-v1",
+    "status": "certified",
+    "terminal_unshifted_energy_difference_eh": 0.0
+  },
+  "schema": "qpccsd-molecular-validation-evidence-v2",
+  "tests": {
+    "complete_with_molecular": "54 passed in 1.75s",
+    "non_molecular": "53 passed, 1 deselected in 4.24s"
+  },
+  "timings": {
+    "maximum_resident_set_kib": 110592,
+    "process_system_s": 0.89,
+    "process_user_s": 3.49,
+    "process_wall_text": "0:10.59",
+    "workflow": {
+      "build_hamiltonian": 0.047993759624660015,
+      "evaluate_pav": 0.830325192771852,
+      "solve_qpccsd": 1.1077828127890825,
+      "terminal_unshifted_audit": 0.03188763000071049,
+      "total": 2.025542992167175
+    }
+  },
+  "wheel": {
+    "build_command": [
+      "python",
+      "-m",
+      "pip",
+      "wheel",
+      "--no-deps",
+      "--wheel-dir",
+      "<result>/wheel",
+      "."
+    ],
+    "build_dependency_install_reported": true,
+    "built": true,
+    "filename": "autogen_qpccsd-0.1.0-py3-none-any.whl",
+    "installed_autogen_file": "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/results/n2_sto3g_r1.10_fresh_end_to_end_v1/wheel_smoke_site/autogen/__init__.py",
+    "installed_with_no_dependencies": true,
+    "installed_workflow_file": "/home/ayush.asthana/jobs/qpccsd-agp2rdm-pav-clean-20260720/project/results/n2_sto3g_r1.10_fresh_end_to_end_v1/wheel_smoke_site/autogen/qpccsd/workflow.py",
+    "network_access_audited": false,
+    "network_dependency_resolution_used": null,
+    "pep517_build_isolation": true,
+    "sha256": "01f557eac763ddaa16914b5aedf030ff6451e16e373380c919a29b4ed5b39055",
+    "smoke_command": [
+      "python",
+      "-m",
+      "autogen.qpccsd.cli",
+      "show-defaults"
+    ],
+    "smoke_passed": true
+  }
+}

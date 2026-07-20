@@ -1,0 +1,627 @@
+{
+  "schema_version": 2,
+  "coefficient_encoding": "exact-rational",
+  "artifact": "factorized-pn-oap-left-moments",
+  "projection_equation_schema": "pn-oap-bpn-v2",
+  "projector_ordering": "B_mu P_N (H-E) exp(T)",
+  "probe_factorization": "B_ZR=A*beta+C*beta_dagger; K=<B_ZR B_ZR>=Z",
+  "maximum_fullspace_tensor_rank": 4,
+  "outputs": {
+    "N0": {
+      "count_canonical": 1,
+      "terms": [
+        {
+          "output_labels": "",
+          "tensors": [
+            {
+              "name": "n0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        }
+      ]
+    },
+    "N20": {
+      "count_canonical": 2,
+      "terms": [
+        {
+          "output_labels": "pq",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pq"
+            },
+            {
+              "name": "n0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pq",
+          "tensors": [
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "qj"
+            },
+            {
+              "name": "n20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        }
+      ]
+    },
+    "N40": {
+      "count_canonical": 10,
+      "terms": [
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pq"
+            },
+            {
+              "name": "K",
+              "labels": "rs"
+            },
+            {
+              "name": "n0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pr"
+            },
+            {
+              "name": "K",
+              "labels": "qs"
+            },
+            {
+              "name": "n0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": -1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "ps"
+            },
+            {
+              "name": "K",
+              "labels": "qr"
+            },
+            {
+              "name": "n0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pq"
+            },
+            {
+              "name": "A",
+              "labels": "ri"
+            },
+            {
+              "name": "A",
+              "labels": "sj"
+            },
+            {
+              "name": "n20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pr"
+            },
+            {
+              "name": "A",
+              "labels": "qi"
+            },
+            {
+              "name": "A",
+              "labels": "sj"
+            },
+            {
+              "name": "n20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": -1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "ps"
+            },
+            {
+              "name": "A",
+              "labels": "qi"
+            },
+            {
+              "name": "A",
+              "labels": "rj"
+            },
+            {
+              "name": "n20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "qr"
+            },
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "sj"
+            },
+            {
+              "name": "n20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "qs"
+            },
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "rj"
+            },
+            {
+              "name": "n20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": -1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "rs"
+            },
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "qj"
+            },
+            {
+              "name": "n20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "qj"
+            },
+            {
+              "name": "A",
+              "labels": "rk"
+            },
+            {
+              "name": "A",
+              "labels": "sl"
+            },
+            {
+              "name": "n40",
+              "labels": "ijkl"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        }
+      ]
+    },
+    "H0": {
+      "count_canonical": 1,
+      "terms": [
+        {
+          "output_labels": "",
+          "tensors": [
+            {
+              "name": "h0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        }
+      ]
+    },
+    "H20": {
+      "count_canonical": 2,
+      "terms": [
+        {
+          "output_labels": "pq",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pq"
+            },
+            {
+              "name": "h0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pq",
+          "tensors": [
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "qj"
+            },
+            {
+              "name": "h20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        }
+      ]
+    },
+    "H40": {
+      "count_canonical": 10,
+      "terms": [
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pq"
+            },
+            {
+              "name": "K",
+              "labels": "rs"
+            },
+            {
+              "name": "h0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pr"
+            },
+            {
+              "name": "K",
+              "labels": "qs"
+            },
+            {
+              "name": "h0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": -1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "ps"
+            },
+            {
+              "name": "K",
+              "labels": "qr"
+            },
+            {
+              "name": "h0",
+              "labels": ""
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pq"
+            },
+            {
+              "name": "A",
+              "labels": "ri"
+            },
+            {
+              "name": "A",
+              "labels": "sj"
+            },
+            {
+              "name": "h20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "pr"
+            },
+            {
+              "name": "A",
+              "labels": "qi"
+            },
+            {
+              "name": "A",
+              "labels": "sj"
+            },
+            {
+              "name": "h20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": -1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "ps"
+            },
+            {
+              "name": "A",
+              "labels": "qi"
+            },
+            {
+              "name": "A",
+              "labels": "rj"
+            },
+            {
+              "name": "h20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "qr"
+            },
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "sj"
+            },
+            {
+              "name": "h20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "qs"
+            },
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "rj"
+            },
+            {
+              "name": "h20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": -1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "K",
+              "labels": "rs"
+            },
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "qj"
+            },
+            {
+              "name": "h20",
+              "labels": "ij"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        },
+        {
+          "output_labels": "pqrs",
+          "tensors": [
+            {
+              "name": "A",
+              "labels": "pi"
+            },
+            {
+              "name": "A",
+              "labels": "qj"
+            },
+            {
+              "name": "A",
+              "labels": "rk"
+            },
+            {
+              "name": "A",
+              "labels": "sl"
+            },
+            {
+              "name": "h40",
+              "labels": "ijkl"
+            }
+          ],
+          "coefficient": {
+            "numerator": 1,
+            "denominator": 1
+          }
+        }
+      ]
+    }
+  }
+}

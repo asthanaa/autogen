@@ -1,0 +1,38 @@
+# One-geometry production and molecular-regression configuration.
+# Run only on Medora, Talon, or an authorized remote desktop.
+
+[system]
+molecule = "n2"
+basis = "sto-3g"
+distance_angstrom = 1.10
+charge = 0
+spin = 0
+symmetry = true
+
+[active_space]
+orbitals = 6
+electrons = 6
+frozen_n1s = true
+
+[solver]
+max_iterations = 80
+max_evaluator_calls = 120
+residual_tolerance = 1.0e-8
+energy_tolerance = 1.0e-10
+step_max = 0.20
+denominator_floor = 1.0e-8
+newton_krylov = true
+newton_globalization = "hookstep"
+newton_step_max = 0.05
+max_jvp_calls = 96
+
+[projection]
+grid_size = 9
+validation_tolerance = 1.0e-8
+cache_mib = 2048
+parallel_mode = "serial"
+workers = 1
+blas_threads = 1
+
+[output]
+path = "results/n2_sto3g_r1.10/production_result.json"

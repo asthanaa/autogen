@@ -1,3 +1,3 @@
 """Scientific method implementations maintained by :mod:`autogen`."""
 
-__all__ = ["ccsd", "eom_ccsd"]
+__all__ = ["ccsd", "eom_ccsd", "qpccsd"]
