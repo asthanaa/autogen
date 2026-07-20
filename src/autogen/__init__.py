@@ -4,6 +4,7 @@ Implementation lives under:
 - `autogen.library`
 - `autogen.main_tools`
 - `autogen.pkg`
+- `autogen.methods`
 
 Backward-compatible import shims are provided at top-level packages:
 `library`, `main_tools`, `pkg`.
@@ -11,4 +12,4 @@ Backward-compatible import shims are provided at top-level packages:
 
 __all__ = ["__version__"]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

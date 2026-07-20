@@ -1,6 +1,8 @@
 # Overview
 
-Autogen is an automatic expression generator for second-quantized many-body expressions using Wick’s theorem.
+Autogen is an automatic expression generator for second-quantized many-body expressions
+using Wick’s theorem and a home for reviewed method implementations generated from that
+algebra.
 
 It is designed to generate algebraic expressions in the same “diagram-style” symbolic form commonly used in electronic structure theory derivations (e.g., coupled cluster and unitary coupled cluster).
 
@@ -22,5 +24,11 @@ In particular, features like de-excitation support and nested commutators (e.g. 
 - `autogen.library` – core term/operator structures and utilities
 - `autogen.main_tools` – commutator/product/driver orchestration
 - `autogen.pkg` – EWT/GWT utilities
+- `autogen.methods.ccsd` – CCSD derivation, generated kernels, and runtime
+- `autogen.methods.eom_ccsd` – EOM-CCSD derivation, generated kernels, and runtime
+- `autogen.methods.qpccsd` – projected-AGP QPCCSD and fixed-amplitude PAV
+
+Method implementations are installable package modules. Checkout-only generated-code
+paths and campaign copies are not public APIs.
 
 Next: see [usage.md](usage.md) for runnable examples.

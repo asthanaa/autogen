@@ -1,5 +1,5 @@
 site_name: Autogen
-site_description: Automatic expression generator using Wick’s theorem.
+site_description: Wick-theorem expression generation and reviewed coupled-cluster methods.
 repo_url: https://github.com/asthanaa/autogen
 
 docs_dir: docs
@@ -15,7 +15,20 @@ nav:
   - Usage: usage.md
   - Concepts: concepts.md
   - API: api.md
+  - Methods:
+      - Overview: methods/index.md
+      - QPCCSD/PAV:
+          - Overview: methods/qpccsd/index.md
+          - Definition: methods/qpccsd/method.md
+          - Projected-AGP reference: methods/qpccsd/reference.md
+          - API and CLI: methods/qpccsd/api.md
+          - Certification: methods/qpccsd/certification.md
+          - Remote execution: methods/qpccsd/remote_execution.md
+          - Development: methods/qpccsd/development.md
+          - Provenance: methods/qpccsd/provenance.md
   - Input/Output: io.md
   - Testing: testing.md
+  - Repository layout: repository_layout.md
+  - Provenance and archives: provenance.md
   - Performance: performance.md
   - Work log: work_log.md

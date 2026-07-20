@@ -29,7 +29,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install build
+          python scripts/validate_repository.py
+          python scripts/check_repository_blobs.py --limit-mib 50
           python -m build
+
+      - name: Validate wheel outside the checkout
+        run: |
+          wheel="$(find dist -maxdepth 1 -name '*.whl' -print -quit)"
+          test -n "$wheel"
+          python scripts/validate_clean_install.py "$wheel"
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite this repository and the associated method papers."
+title: "AutoGen-Wick: generated coupled-cluster methods"
+type: software
+authors:
+  - family-names: Asthana
+    given-names: Ayush
+version: 0.2.0
+date-released: 2026-07-20
+license: MIT
+keywords:
+  - Wick theorem
+  - coupled cluster
+  - CCSD
+  - EOM-CCSD
+  - projected-AGP QPCCSD
+  - particle-number PAV
+  - electronic structure
+repository-code: "https://github.com/asthanaa/autogen"

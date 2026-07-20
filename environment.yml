@@ -8,5 +8,4 @@ dependencies:
   - python-build
   - pip
   - pip:
-      - -e .
-      - pytest>=7
+      - -e .[dev]

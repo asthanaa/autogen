@@ -1,21 +1,20 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
 [project]
 name = "autogen-wick"
-version = "0.1.1"
+version = "0.2.0"
 description = "Automatic Wick's theorem expression generator for quantum chemistry (unitary coupled cluster, CC, etc)."
 readme = "README.md"
-requires-python = ">=3.9"
-license = { text = "MIT" }
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Ayush Asthana" }]
 urls = { "Homepage" = "https://github.com/asthanaa/autogen", "Documentation" = "https://asthanaa.github.io/autogen/" }
 classifiers = [
-	"License :: OSI Approved :: MIT License",
 	"Programming Language :: Python :: 3",
-	"Programming Language :: Python :: 3.9",
 	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
 	"Programming Language :: Python :: 3.12",
@@ -24,17 +23,32 @@ classifiers = [
 	"Topic :: Scientific/Engineering :: Chemistry",
 	"Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["numpy>=1.24"]
+dependencies = [
+	"numpy>=1.24",
+	"scipy>=1.10",
+	"matplotlib>=3.7",
+	"threadpoolctl>=3.2",
+	"tomli>=2.0; python_version < '3.11'",
+]
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+molecular = ["pyscf>=2.6"]
+test = ["pytest>=7.4"]
+dev = ["build>=1.2", "pytest>=7.4", "ruff>=0.5"]
+
+[project.scripts]
+qpccsd = "autogen.methods.qpccsd.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["autogen*"]
+include = ["autogen*", "generated_code*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json"]
 
 [tool.setuptools.exclude-package-data]
 "*" = [
@@ -52,3 +66,10 @@ include = ["autogen*"]
 	"backup/**/*.docx",
 	"backup/**/*.bak"
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

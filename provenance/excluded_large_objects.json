@@ -1,0 +1,22 @@
+{
+  "schema": "autogen-excluded-large-object-provenance-v1",
+  "objects": [
+    {
+      "name": "legacy projected QPCCSD code-generation plan",
+      "former_path": "generated_code/methods/qp_ccsd/projected_codegen_plan.json",
+      "size_bytes": 387064269,
+      "sha256": "636b05aad1003e8c5d985712eee49bb13e6718ef6cffbdf0595d24bd978f59a0",
+      "status": "excluded from Git history, source distributions, and wheels",
+      "source": {
+        "repository": "asthanaa/autogen",
+        "commit": "0a851d3469a8476aa36d01b3437021c9c2815ace",
+        "path": "generated_code/methods/qp_ccsd/projected_codegen_plan.json"
+      },
+      "regeneration": {
+        "working_tree": "legacy pre-consolidation source checkout",
+        "command": "AUTOGEN_QP_Z_CONTRACTION=1 PYTHONPATH=src python -m autogen.codegen.cli --spec src/autogen/methods/qpccsd/derivation/specs/qp_ccsd_spec.py --full --projection-only --quiet",
+        "note": "The canonical projected-AGP QPCCSD/PAV runtime does not load this legacy diagnostic plan."
+      }
+    }
+  ]
+}

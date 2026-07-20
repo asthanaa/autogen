@@ -1,31 +1,24 @@
 # Autogen documentation
 
-Autogen is an automatic expression generator using Wick’s theorem for quantum chemistry derivations.
-
-This `docs/` folder is the main documentation. The root README is intentionally short and points here.
+Autogen is an installable Wick-theorem algebra library with method-centered CCSD,
+EOM-CCSD, and QPCCSD implementations.
 
 ## Start here
 
-- Overview: [overview.md](overview.md)
-- Install: [installation.md](installation.md)
-- Usage (examples): [usage.md](usage.md)
-- Concepts/definitions: [concepts.md](concepts.md)
-- API guide: [api.md](api.md)
-- Input/output: [io.md](io.md)
-- Testing: [testing.md](testing.md)
-- Performance: [performance.md](performance.md)
-- Work log: [work_log.md](work_log.md)
+- [Overview](overview.md)
+- [Installation](installation.md)
+- [Usage](usage.md)
+- [API guide](api.md)
+- [Methods](methods/index.md)
+- [Repository layout](repository_layout.md)
+- [Testing and validation](testing.md)
+- [Provenance and archives](provenance.md)
 
-## Imports
+## Canonical imports
 
-All code should import from the canonical package paths:
+Symbolic APIs use `autogen.library`, `autogen.main_tools`, and `autogen.pkg`. Method APIs
+use `autogen.methods.ccsd`, `autogen.methods.eom_ccsd`, and
+`autogen.methods.qpccsd`.
 
-- `autogen.library`
-- `autogen.main_tools`
-- `autogen.pkg`
-
-## Repository layout
-
-- `src/autogen/` – the installable Python package
-- `tests/` – pytest suite
-- `docs/` – documentation (this folder)
+The source of truth is always the package under `src/autogen`. Legacy generated trees,
+campaign directories, and archive snapshots are not alternative import roots.
