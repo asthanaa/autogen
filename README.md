@@ -1,113 +1,105 @@
-
 # Autogen
 
-<!-- Badges -->
-<p align="left">
-	<a href="https://pypi.org/project/autogen-wick/"><img alt="PyPI" src="https://img.shields.io/pypi/v/autogen-wick.svg"></a>
-	<a href="https://pypi.org/project/autogen-wick/"><img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/autogen-wick.svg"></a>
-	<a href="https://github.com/ayushasthana/autogen/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ayushasthana/autogen"></a>
-</p>
-	<a href="https://ayushasthana.github.io/autogen/"><img alt="Docs" src="https://img.shields.io/badge/docs-online-blue.svg"></a>
-</p>
-</p>
+[![PyPI](https://img.shields.io/pypi/v/autogen-wick.svg)](https://pypi.org/project/autogen-wick/)
+[![Python](https://img.shields.io/pypi/pyversions/autogen-wick.svg)](https://pypi.org/project/autogen-wick/)
+[![Documentation](https://img.shields.io/badge/docs-online-blue.svg)](https://asthanaa.github.io/autogen/)
 
-Autogen is an automatic expression generator for second-quantized many-body expressions using Wick’s theorem, aimed at quantum chemistry derivations (including UCC-style algebra).
+Autogen combines a Wick-theorem expression generator with reviewed coupled-cluster
+method implementations. The installable library is rooted at `src/autogen`; generated
+runtime code, derivation inputs, and tests are organized by method rather than kept in a
+second source tree.
 
-Most documentation lives in [docs/index.md](docs/index.md).
+## Install
 
-
-## Installation
-
-Install from PyPI:
+Python 3.10 or newer is required.
 
 ```bash
-pip install autogen-wick
+python -m pip install autogen-wick
 ```
 
-Project name on PyPI: **autogen-wick**
-Python import: `import autogen`
-
-Optional: install PySCF (needed for generated integral/einsum scripts):
+For molecular reference construction and regressions, install PySCF explicitly:
 
 ```bash
-pip install pyscf
+python -m pip install "autogen-wick[molecular]"
 ```
 
-Or with conda:
+For development:
 
 ```bash
-conda install -c conda-forge pyscf
+python -m pip install -e ".[dev]"
+python -m pytest
 ```
 
-Or use the conda environment for development:
+The default test selection never starts molecular calculations. Those calculations are
+restricted to Medora, Talon, or an authorized remote desktop.
 
-```bash
-conda env create -f environment.yml
-conda activate autogen
-pytest -q
-```
+## Canonical APIs
 
-## Canonical imports
-
-Use these package paths:
+Symbolic Wick-algebra utilities remain available under:
 
 - `autogen.library`
 - `autogen.main_tools`
 - `autogen.pkg`
 
-## Common workflows
+Reviewed electronic-structure methods live under:
 
-- Debug workflow (writes LaTeX-ish output to `latex_output.txt` by default):
-	- `python debug.py`
-- Compare mode (default is fast):
-	- `AUTOGEN_COMPARE_MODE=full python debug.py`
-	- `AUTOGEN_COMPARE_MODE=check python debug.py`
-- Quiet runs (suppress verbose prints):
-	- `AUTOGEN_QUIET=1 python debug.py`
-- Spin-summed coefficients for spatial-orbital integrals (default on):
-	- `AUTOGEN_SPIN_SUMMED=1 python debug.py`
-- Benchmark compare-heavy workflows:
-	- `python scripts/bench_compare.py --repeat 3 --warmup 1`
-- Disable contraction prefix caching:
-	- `AUTOGEN_CACHE=0 python debug.py`
-- Disable multi-operator contraction caching:
-	- `AUTOGEN_MULTI_CONT_CACHE=0 python debug.py`
-- Resize multi-operator contraction cache (LRU, default 256):
-	- `AUTOGEN_MULTI_CONT_CACHE_SIZE=512 python debug.py`
-- Disable pattern-level contraction match caching:
-	- `AUTOGEN_MATCHING_CACHE=0 python debug.py`
-- Resize pattern-level match cache (LRU, default 128):
-	- `AUTOGEN_MATCHING_CACHE_SIZE=256 python debug.py`
-- Enable Numba-based contraction enumeration (optional, requires numba):
-	- `AUTOGEN_NUMBA=1 python debug.py`
-- Disable caching of typed candidate lists for Numba:
-	- `AUTOGEN_NUMBA_CANDS_CACHE=0 python debug.py`
-- Resize typed candidate cache (LRU, default 64):
-	- `AUTOGEN_NUMBA_CANDS_CACHE_SIZE=128 python debug.py`
-- Generate einsum scripts (writes to `generated_code/`, method outputs under `generated_code/methods/`):
-	- `python scripts/gen_einsum.py V2 T1 T1`
-	- `python scripts/gen_einsum.py V2 T2`
-	- `python scripts/gen_einsum.py F1 T1`
-	- `python scripts/gen_einsum.py CCSD_ENERGY`
-	- `python scripts/gen_einsum.py CCSD_AMPLITUDE`
-	- `python scripts/gen_einsum.py --spec method_inputs/eom_ccsd/ee_eom_ccsd_spec.py --intermediates --quiet`
-- Method input specs live under `method_inputs/<method>/`, and slow-test molecule fixtures live under `tests/molecules/`.
-- Run fast tests:
-	- `pytest`
-- Run the slow CCSD integration test:
-	- `RUN_SLOW=1 pytest -k ccsd`
-- Run the slow EOM-CCSD integration test:
-	- `RUN_SLOW=1 pytest -k eom_ccsd`
+- `autogen.methods.ccsd`
+- `autogen.methods.eom_ccsd`
+- `autogen.methods.qpccsd`
 
-## Build
+The QPCCSD command-line interface is installed as `qpccsd`:
 
 ```bash
-conda run -n autogen python -m build
+qpccsd --help
+qpccsd show-defaults
+qpccsd run configs/qpccsd/n2_sto3g.toml
 ```
 
-## Where to read next
+## Default QPCCSD contract
 
-- Docs home: [docs/index.md](docs/index.md)
-- Concepts/definitions: [docs/concepts.md](docs/concepts.md)
-- API guide: [docs/api.md](docs/api.md)
-- Usage examples: [docs/usage.md](docs/usage.md)
+The public QPCCSD route is deliberately narrow:
+
+1. fit a projected AGP reference to the active natural occupations and active
+   pair-transfer 2-RDM block;
+2. solve direct QPCCSD in the full symmetry-allowed pair/quadruple coordinate space,
+   including pure-active T1/T2 coordinates;
+3. report the direct quasiparticle Hamiltonian energy—never CASSCF plus a QP correction;
+4. evaluate particle-number PAV with the converged amplitudes held fixed and validate it
+   on a doubled midpoint grid.
+
+PN-OAP, masked excitation spaces, CASSCF-plus-delta energies, cubic extensions, and
+alternative references are experimental or archived routes. They are not selected by
+the default import or CLI.
+
+## Repository map
+
+```text
+src/autogen/methods/       canonical method packages
+tests/methods/             method-specific tests and compact fixtures
+configs/                   reviewed example configurations
+docs/methods/              scientific definitions and certification contracts
+provenance/                machine-readable source/artifact records
+scripts/                   generation, validation, and remote launch helpers
+```
+
+Large generated plans, checkpoints, logs, raw results, campaign copies, and plot build
+trees are excluded from Git and wheels. See the
+[repository layout](docs/repository_layout.md) and [provenance policy](docs/provenance.md).
+
+## Validate a checkout
+
+```bash
+python scripts/validate_repository.py
+python scripts/check_repository_blobs.py --limit-mib 50
+python -m pytest
+python -m build
+python scripts/validate_clean_install.py dist/autogen_wick-*.whl
+```
+
+The clean-install check creates an isolated environment, imports all public method
+packages outside the checkout, verifies the QPCCSD entry point, and confirms that both
+canonical-term JSON manifests were packaged.
+
+Documentation starts at [docs/index.md](docs/index.md).
+
+Citation metadata is provided in [CITATION.cff](CITATION.cff).

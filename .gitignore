@@ -11,12 +11,61 @@ comm_copy_4Feb.py
 dist/
 build/
 .pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+site/
 
 # Local debug outputs
 latex_output.txt
 latex_terms.txt
 out_test
-generated_code/
 
-# MkDocs build output
-site/
+# Generated runtime code is reproducible source only when deliberately checked in.
+/generated_code/
+
+# The historical projected-codegen plan is 387 MB and must never be committed.
+/generated_code/methods/qp_ccsd/projected_codegen_plan.json
+**/projected_codegen_plan.json
+
+# Molecular checkpoints and solver restart state.
+/checkpoints/
+**/checkpoints/
+*.chk
+*.chkfile
+*.checkpoint
+*.ckpt
+*.amplitudes.npz
+*.checkpoint.npz
+*.restart.npz
+
+# Scheduler and calculation logs.
+/logs/
+**/logs/
+slurm-*.out
+slurm-*.err
+*.sbatch.out
+*.sbatch.err
+*.log
+
+# Raw calculation and plotting products. Curated fixtures and publication
+# figures must be copied to an explicitly tracked documentation/test path.
+/results/
+**/results/
+**/results/raw/
+/raw_plots/
+**/raw_plots/
+**/plots/raw/
+**/raw_plot*.png
+**/raw_plot*.pdf
+
+# Local archives, campaign snapshots, and scratch build trees.
+/archive/
+/artifacts/
+/tmp/
+/tmp_*/
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls

@@ -24,6 +24,39 @@ class term(object):
             for op in term:
                 #print op
                 if op.kind=='d':
+                    upper_name = op.upper[0].name
+                    lower_name = op.lower[0].name
+                    if (
+                        ('p' <= upper_name[0] <= 's')
+                        or ('p' <= lower_name[0] <= 's')
+                    ):
+                        # Handle generic (p/q/r/s) deltas without assuming summed indices.
+                        if upper_name in self.sum_list and lower_name in self.sum_list:
+                            if upper_name[0] >= lower_name[0]:
+                                for c1 in self.coeff_list:
+                                    for n,i in enumerate(c1):
+                                        if i==upper_name:
+                                            c1[n]=lower_name
+                                self.sum_list.remove(upper_name)
+                            else:
+                                for c1 in self.coeff_list:
+                                    for n,i in enumerate(c1):
+                                        if i==lower_name:
+                                            c1[n]=upper_name
+                                self.sum_list.remove(lower_name)
+                        elif upper_name in self.sum_list:
+                            for c1 in self.coeff_list:
+                                for n,i in enumerate(c1):
+                                    if i==upper_name:
+                                        c1[n]=lower_name
+                            self.sum_list.remove(upper_name)
+                        elif lower_name in self.sum_list:
+                            for c1 in self.coeff_list:
+                                for n,i in enumerate(c1):
+                                    if i==lower_name:
+                                        c1[n]=upper_name
+                            self.sum_list.remove(lower_name)
+                        continue
                     if op.upper[0].name[0]>='p' and op.upper[0].name[0]<='s':
                         #find name in coeff
                         #self.coeff_list=[[w.replace(op.upper[0].name, op.lower[0].name) for w in l] for l in self.coeff_list]
@@ -258,9 +291,18 @@ class term(object):
             elif self.large_op_list[i].name[0]=='V':
                 f.write("<")
 
+            coeff = self.coeff_list[i]
+            upper_len = len(coeff) // 2
+            name = self.large_op_list[i].name
+            if name and name[0] == 'H' and len(name) >= 3 and name[1].isdigit() and name[2].isdigit():
+                n_up = int(name[1])
+                n_low = int(name[2])
+                if n_up + n_low == len(coeff):
+                    upper_len = n_up
+
             if self.large_op_list[i].name[0]!='X':
-                for it1 in range(0, len(self.coeff_list[i])//2):
-                    f.write(self.coeff_list[i][it1])
+                for it1 in range(0, upper_len):
+                    f.write(coeff[it1])
 
             if self.large_op_list[i].name[0]!='V' and self.large_op_list[i].name[0]!='X':
                 f.write("}_{")
@@ -268,8 +310,8 @@ class term(object):
                 f.write("||")
 
             if self.large_op_list[i].name[0]!='X':
-                for it2 in range(len(self.coeff_list[i])//2, len(self.coeff_list[i])):
-                    f.write(self.coeff_list[i][it2])
+                for it2 in range(upper_len, len(coeff)):
+                    f.write(coeff[it2])
             if self.large_op_list[i].name[0]!='V' and self.large_op_list[i].name[0]!='X':
                 f.write("}")
             elif self.large_op_list[i].name[0]=='V':
@@ -288,5 +330,3 @@ class term(object):
     def build_map_org(self):
         for item in self.large_op_list:
             self.map_org.append(item)
-
-

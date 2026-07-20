@@ -8,16 +8,17 @@ To install the latest release directly from PyPI:
 pip install autogen-wick
 ```
 
-This will install the package and all dependencies. You can then use it in Python:
+Python 3.10 or newer is required. The base installation includes NumPy, SciPy,
+Matplotlib, and thread-pool controls. You can then use it in Python:
 
 ```python
 import autogen
 ```
 
-Optional: install PySCF if you want to run the generated integral/einsum scripts:
+Install the molecular extra when PySCF-backed references or regressions are needed:
 
 ```bash
-pip install pyscf
+pip install "autogen-wick[molecular]"
 ```
 
 Or with conda:
@@ -44,10 +45,23 @@ conda activate autogen
 
 This environment installs the project in editable mode (`-e .`), so imports work from anywhere.
 
+For a lightweight virtual-environment development setup instead:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+python -m pytest
+```
+
+Molecular calculations are excluded from the default test selection. Run them only on
+Medora, Talon, or an authorized remote desktop with the `molecular` extra installed.
+
 ## Build artifacts (sdist + wheel)
 
 ```bash
 conda run -n autogen python -m build
+python scripts/validate_clean_install.py dist/autogen_wick-*.whl
 ```
 
 Outputs go into `dist/`.

@@ -29,10 +29,15 @@ This calls `autogen.debug.run_debug()` and writes to `latex_output.txt` by defau
 
 You may see historical scripts named `input.py` under various folders (e.g. older experiments under `backup/`). Treat those as runnable examples rather than a single canonical input format.
 
-## Method specs and generated code layout
+## Method inputs and generated code
 
-- Method input specs live under `method_inputs/<method>/` (for example, `method_inputs/ccsd/ccsd_spec.py`).
-- Generated code is written under `generated_code/methods/<method>/` and includes `__init__.py` files so it can be imported as a package.
-- Slow integration test molecule fixtures live under `tests/molecules/`.
+Canonical method content lives below `src/autogen/methods/<method>`. Derivation inputs
+and conventions are under `derivation`, compact generated kernels/manifests under
+`generated`, and handwritten CCSD/EOM runtimes under `runtime`. QPCCSD uses its reviewed
+`production` runtime layer.
+
+Generated JSON manifests required by runtime or algebra audits are included in the
+wheel. Raw calculation results, checkpoints, logs, and large code-generation plans are
+external artifacts and must not be loaded implicitly from a checkout-relative path.
 
 Next: see [usage.md](usage.md) for example pipelines.

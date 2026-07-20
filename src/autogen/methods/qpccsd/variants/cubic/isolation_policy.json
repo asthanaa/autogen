@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "protected_paths": [
+    "src/autogen/qpccsd",
+    "method_inputs/qp_ccsd",
+    "generated_code/methods/qp_ccsd"
+  ],
+  "ignored_directory_names": [
+    "__pycache__",
+    ".pytest_cache"
+  ],
+  "ignored_file_names": [
+    ".DS_Store"
+  ],
+  "ignored_file_suffixes": [
+    ".pyc",
+    ".pyo"
+  ]
+}

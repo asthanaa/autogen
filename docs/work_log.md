@@ -1,6 +1,8 @@
 # Work log
 
-This file summarizes the recent performance and correctness work on Autogen.
+This file summarizes historical performance and correctness work on Autogen. Paths in
+older benchmark notes have since been consolidated into the method-centered package
+layout described in [repository_layout.md](repository_layout.md).
 
 ## Changes implemented
 
@@ -10,9 +12,9 @@ This file summarizes the recent performance and correctness work on Autogen.
 - Compare level-5: cache coefficient index graphs on juggled terms to avoid
   rebuilding `ind` objects; add a guarded permutation check for short operator
   names and an optional `AUTOGEN_COMPARE_LEVEL5=matrix` mode.
-- Generated code layout: method outputs now live under
-  `generated_code/methods/<method>`, with input specs in
-  `method_inputs/<method>` and molecule fixtures in `tests/molecules`.
+- Generated code layout: reviewed method outputs now live under
+  `src/autogen/methods/<method>/generated`, with specifications under the method's
+  `derivation` layer and fixtures under `tests/methods/<method>`.
 - EE-EOM-CCSD: added R1/R2 operator support, a spin-summed EOM spec, a
   Davidson solver emitter, and PySCF-based regression tests.
 - EE-EOM-CCSD generation: switched to exact BCH nested-commutator expansion
@@ -98,9 +100,8 @@ Full CCSD amplitude timing (`scripts/time_ccsd_full.py`):
 
 ## Tests
 
-- `pytest -q` (1 skipped)
-- `RUN_SLOW=1 pytest -q -k pyscf` for PySCF numeric checks
-- `RUN_SLOW=1 pytest -q -k eom_ccsd` for EE-EOM-CCSD checks
+- `python -m pytest` for the default non-molecular suite
+- `python -m pytest -m "molecular and remote"` on an approved host for PySCF checks
 
 ## Numba install note (macOS)
 

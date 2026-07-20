@@ -2,6 +2,28 @@
 
 This is a pragmatic guide to the functions most users call directly.
 
+## Method APIs
+
+The stable method facades are:
+
+```python
+import autogen.methods.ccsd
+import autogen.methods.eom_ccsd
+from autogen.methods.qpccsd import run_qpccsd_pav
+```
+
+QPCCSD also installs a command-line interface:
+
+```text
+qpccsd show-defaults
+qpccsd run configs/qpccsd/n2_sto3g.toml
+qpccsd validate RESULT.json --anchor CERTIFIED_RESULT.json
+```
+
+The default facade exposes the reviewed projected-AGP, direct-energy, full-coordinate
+QPCCSD/PAV workflow. Experimental reference, energy, and projection routes are not
+re-exported. See the [QPCCSD API contract](methods/qpccsd/api.md).
+
 ## Commutators
 
 ### `autogen.main_tools.commutator.comm`

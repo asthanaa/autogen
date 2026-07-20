@@ -1,0 +1,187 @@
+{
+  "certification": {
+    "certified": true,
+    "diagnostic_only": false,
+    "fresh_terminal_unshifted_residual": true,
+    "pav_from_uncertified_amplitudes": false,
+    "pav_numerically_validated": true,
+    "raw_certified": true,
+    "reference_canonical_tolerance": 1e-12,
+    "reference_finite_and_canonical": true
+  },
+  "energies_eh": {
+    "pav_qpccsd": -107.65060143315307,
+    "pav_qpccsd_imaginary": 0.0,
+    "qpccsd": -107.65269549939507,
+    "qpccsd_imaginary": 0.0
+  },
+  "excitation_space": {
+    "active_pair_coordinates": 6,
+    "active_quadruple_coordinates": 21,
+    "allowed_pairs": 8,
+    "allowed_quadruples": 57,
+    "coordinate_count": 65,
+    "excitation_space_kind": "spatial-total-singlet-block",
+    "include_active_t1_t2": true,
+    "internal_coordinates_excluded": 0,
+    "pair_block_counts": {
+      "ix": 2,
+      "xy": 6
+    },
+    "quadruple_block_counts": {
+      "ijxy": 18,
+      "ixyz": 18,
+      "xyzw": 21
+    }
+  },
+  "method": {
+    "energy": {
+      "cas_plus_delta_applied": false,
+      "casscf_energy_added": false,
+      "convention": "direct",
+      "definition": "E_QP(T) in the correlated molecular Hamiltonian"
+    },
+    "excitation_space": {
+      "include_active_t1_t2": true,
+      "mode": "full-symmetry-adapted-active-t1-t2",
+      "symmetry": "total-singlet and totally symmetric"
+    },
+    "projection": {
+      "amplitudes_fixed": true,
+      "closure": "W1/W2 with W3=0",
+      "disentanglement_backend": "ser2",
+      "doubled_grid_validation": true,
+      "gauge_quadrature": "midpoint",
+      "mode": "fixed-amplitude-pn-pav-ser2-w2",
+      "parity": "even",
+      "projected_residual_optimized": false,
+      "workflow": "projection after variation"
+    },
+    "reference": {
+      "complete_active_rdm2_reconstructed": false,
+      "mode": "projected_agp_2rdm",
+      "protocol": "cas-natural-orbital-signed-projected-agp-pair-transfer-fit-v1"
+    }
+  },
+  "pav": {
+    "amplitudes_fixed": true,
+    "baseline_grid_size": 9,
+    "cas_plus_delta_applied": false,
+    "disentanglement_backend": "ser2",
+    "energy_convention": "direct",
+    "energy_eh": -107.65060143315307,
+    "energy_imaginary_eh": 0.0,
+    "evaluated": true,
+    "gauge_quadrature": "midpoint",
+    "grid_error_eh": 5.851493029736202e-19,
+    "projected_residual_optimized": false,
+    "raw_grid_error_eh": 5.851493029736202e-19,
+    "raw_imaginary_energy_error_eh": 1.2146161493856798e-18,
+    "validation_grid_size": 18,
+    "validation_passed": true
+  },
+  "provenance": {
+    "config_file": "n2_sto3g.toml",
+    "config_sha256": "ad4eb4939ffe5654c10bcbc453a7def91c16854d22dc8baeede1ea40b2945d41",
+    "hostname": "medoralogin",
+    "numpy": "1.26.4",
+    "output_amplitudes": {
+      "name": "production_result.amplitudes.npz",
+      "sha256": "38dcdb7b84e05f9d17614c8efc06d1fe3277498417de518179bd8f201315f885"
+    },
+    "python": "3.12.13"
+  },
+  "qpccsd": {
+    "converged": true,
+    "energy_convention": "direct",
+    "energy_eh": -107.65269549939507,
+    "energy_imaginary_eh": 0.0,
+    "evaluator_calls": 32,
+    "iterations": 27,
+    "residual_norm": 9.33506029421327e-10,
+    "terminal_unshifted_audit": true,
+    "terminal_unshifted_energy_difference_eh": 0.0
+  },
+  "reference": {
+    "active_natural_occupations": [
+      1.9296669317553377,
+      1.9296669317553374,
+      1.9826957838128696,
+      0.07016450189558301,
+      0.07016450189558289,
+      0.017641348885289298
+    ],
+    "array_fingerprints_sha256": {
+      "active_rdm1": "6c957c73cbef8836291d5b4cc5d82439c523dfb29a092df29d807c1253fafef1",
+      "active_rdm2": "144af062b01d8e180f3efb2bda8b1deaae4174522c79f45c6057b4908236a51a",
+      "mo_coeff": "7bc31111b98587250a668dea1caf95628b2ea2b9a97af32e812ceecbdce1825a"
+    },
+    "bogoliubov_canonical_errors": [
+      2.220446049250313e-16,
+      0.0
+    ],
+    "casscf_energy_diagnostic_eh": -107.638233474025,
+    "global_number_setting_scale": 22.841838734256978,
+    "reconstruction_metrics": {
+      "active_average_number_error": 1.758593271006248e-13,
+      "fit_cost": 0.01861003010044869,
+      "fit_message": "`ftol` termination condition is satisfied.",
+      "fit_success": true,
+      "pair_rdm2_max_abs_error": 0.1299823373282349,
+      "pair_subspace_fidelity": 0.9942307602558862,
+      "rdm1_max_abs_error": 0.04080702400276148
+    },
+    "reference_mode": "projected_agp_2rdm",
+    "relative_signed_geminals": [
+      0.1487078074357003,
+      0.14870780674855125,
+      1.0,
+      -0.012837673929240193,
+      -0.012837673984177848,
+      -0.002429568292748646
+    ],
+    "scaled_signed_geminals": [
+      3.3967597559712073,
+      3.396759740275459,
+      22.841838734256978,
+      -0.2932360776146796,
+      -0.29323607886955666,
+      -0.05549580713682862
+    ],
+    "source_rdm_metadata": {
+      "complete_active_rdm2_reconstructed": false,
+      "pair_transfer_block": "active_rdm2[p,q,p,q]",
+      "rdm1": "spin-summed spatial <p^dagger q>",
+      "rdm2": "PySCF spin-free convention",
+      "reference_protocol": "cas-natural-orbital-signed-projected-agp-pair-transfer-fit-v1"
+    }
+  },
+  "schema": "projected-agp-fullspace-qpccsd-pav-v1",
+  "status": "certified",
+  "system": {
+    "active_spatial_indices": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "atom": "N 0 0 -0.550000000000; N 0 0 0.550000000000",
+    "basis": "sto-3g",
+    "correlated_target_number": 10,
+    "frozen_spatial_indices": [
+      0,
+      1
+    ],
+    "nspin": 16,
+    "physical_target_number": 14
+  },
+  "timings_s": {
+    "build_hamiltonian": 0.047993759624660015,
+    "evaluate_pav": 0.830325192771852,
+    "solve_qpccsd": 1.1077828127890825,
+    "terminal_unshifted_audit": 0.03188763000071049,
+    "total": 2.025542992167175
+  }
+}

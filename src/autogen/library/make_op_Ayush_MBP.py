@@ -1,6 +1,13 @@
+import math
+import os
+
 from autogen.pkg import func_ewt 
 from . import class_large_operator as class1
 from .next_op import next_op
+
+
+def _bog_qp_enabled():
+    return os.getenv("AUTOGEN_BOGOLIUBOV_QP") == "1"
 def count_list(dict_ind):
     a=0
     p=0
@@ -120,6 +127,26 @@ def make_op(list_op, dict_ind):
             list_type[2]+=4
 
             print(summ,opp.upper,opp.lower)
+        elif lop[0]=='H' and len(lop) >= 3 and lop[1].isdigit() and lop[2].isdigit():
+            n_up = int(lop[1])
+            n_low = int(lop[2])
+            if n_up + n_low <= 0:
+                continue
+            fac = 1.0 / (math.factorial(n_up) * math.factorial(n_low))
+            indices = [next_op('p', list_type, k) for k in range(n_up + n_low)]
+            summ = list(indices)
+            coeff = list(indices)
+            opp = func_ewt.contractedobj('op', 1, 1)
+            opp.upper = indices[:n_up]
+            opp.lower = indices[n_up:]
+            st = [[opp]]
+            co = [[1,1]]
+            for idx in indices:
+                dict_ind[idx] = lop
+            H = class1.large_operator(lop, fac, summ, coeff, st, co)
+            list_main.append(H)
+            list_type[2] += n_up + n_low
+            print(summ, opp.upper, opp.lower)
         elif lop[0]=='D' and lop[1]=='1':
 
 
@@ -153,19 +180,33 @@ def make_op(list_op, dict_ind):
             #summ=['i','j','a','b']
             summ=[]
             #coeff=['i','j','a','b']
-            coeff=[next_op('i',list_type,0),next_op('a',list_type,0)]
+            if _bog_qp_enabled():
+                coeff=[next_op('p',list_type,0),next_op('p',list_type,1)]
+            else:
+                coeff=[next_op('i',list_type,0),next_op('a',list_type,0)]
             opp=func_ewt.contractedobj('op', 1, 1)
-            opp.upper=[next_op('i',list_type,0)]
-            opp.lower=[next_op('a',list_type,0)]
+            if _bog_qp_enabled():
+                opp.upper=[]
+                opp.lower=[next_op('p',list_type,0),next_op('p',list_type,1)]
+            else:
+                opp.upper=[next_op('i',list_type,0)]
+                opp.lower=[next_op('a',list_type,0)]
             st=[[opp]]
             co=[[1,1]]
-            dict_ind[next_op('i',list_type,0)]=lop
-            dict_ind[next_op('a',list_type,0)]=lop
+            if _bog_qp_enabled():
+                dict_ind[next_op('p',list_type,0)]=lop
+                dict_ind[next_op('p',list_type,1)]=lop
+            else:
+                dict_ind[next_op('i',list_type,0)]=lop
+                dict_ind[next_op('a',list_type,0)]=lop
             X1 = class1.large_operator(lop,fac, summ, coeff, st, co)
             list_main.append(X1)
 
-            list_type[0]+=1
-            list_type[1]+=1
+            if _bog_qp_enabled():
+                list_type[2]+=2
+            else:
+                list_type[0]+=1
+                list_type[1]+=1
 
 
 
@@ -232,67 +273,138 @@ def make_op(list_op, dict_ind):
             #summ=['i','j','a','b']
             summ=[]
             #coeff=['i','j','a','b']
-            coeff=[next_op('i',list_type,0),next_op('i',list_type,1),next_op('a',list_type,0),next_op('a',list_type,1)]
+            if _bog_qp_enabled():
+                coeff=[
+                    next_op('p',list_type,0),
+                    next_op('p',list_type,1),
+                    next_op('p',list_type,2),
+                    next_op('p',list_type,3),
+                ]
+            else:
+                coeff=[next_op('i',list_type,0),next_op('i',list_type,1),next_op('a',list_type,0),next_op('a',list_type,1)]
             opp=func_ewt.contractedobj('op', 1, 1)
-            opp.upper=[next_op('i',list_type,0),next_op('i',list_type,1)]
-            opp.lower=[next_op('a',list_type,0),next_op('a',list_type,1)]
+            if _bog_qp_enabled():
+                opp.upper=[]
+                opp.lower=[
+                    next_op('p',list_type,0),
+                    next_op('p',list_type,1),
+                    next_op('p',list_type,2),
+                    next_op('p',list_type,3),
+                ]
+            else:
+                opp.upper=[next_op('i',list_type,0),next_op('i',list_type,1)]
+                opp.lower=[next_op('a',list_type,0),next_op('a',list_type,1)]
             st=[[opp]]
             co=[[1,1]]
-            dict_ind[next_op('i',list_type,0)]=lop
-            dict_ind[next_op('i',list_type,1)]=lop
-            dict_ind[next_op('a',list_type,0)]=lop
-            dict_ind[next_op('a',list_type,1)]=lop
+            if _bog_qp_enabled():
+                dict_ind[next_op('p',list_type,0)]=lop
+                dict_ind[next_op('p',list_type,1)]=lop
+                dict_ind[next_op('p',list_type,2)]=lop
+                dict_ind[next_op('p',list_type,3)]=lop
+            else:
+                dict_ind[next_op('i',list_type,0)]=lop
+                dict_ind[next_op('i',list_type,1)]=lop
+                dict_ind[next_op('a',list_type,0)]=lop
+                dict_ind[next_op('a',list_type,1)]=lop
 
             X2 = class1.large_operator(lop,fac, summ, coeff, st, co)
             list_main.append(X2)
 
 
-            list_type[0]+=2
-            list_type[1]+=2
+            if _bog_qp_enabled():
+                list_type[2]+=4
+            else:
+                list_type[0]+=2
+                list_type[1]+=2
 
             print(summ,opp.upper,opp.lower,coeff)
 
         elif lop[0]=='T' and lop[1]=='1':
             #num1=ord('i')+list_type[0]
             #num2=ord('a')+list_type[1]
-            fac=1.0
-            summ=[next_op('a',list_type,0),next_op('i',list_type,0)]
-            coeff=[next_op('a',list_type,0),next_op('i',list_type,0)]
+            if _bog_qp_enabled():
+                fac=1.0/2.0
+                summ=[next_op('p',list_type,0),next_op('p',list_type,1)]
+                coeff=[next_op('p',list_type,0),next_op('p',list_type,1)]
+            else:
+                fac=1.0
+                summ=[next_op('a',list_type,0),next_op('i',list_type,0)]
+                coeff=[next_op('a',list_type,0),next_op('i',list_type,0)]
             #coeff=[chr(num2),chr(num1)]
             opp=func_ewt.contractedobj('op', 1, 1)
-            opp.upper=[next_op('a',list_type,0)]
-            opp.lower=[next_op('i',list_type,0)]
+            if _bog_qp_enabled():
+                opp.upper=[next_op('p',list_type,0),next_op('p',list_type,1)]
+                opp.lower=[]
+            else:
+                opp.upper=[next_op('a',list_type,0)]
+                opp.lower=[next_op('i',list_type,0)]
             stt=[[opp]]
             co=[[1,1]]
-            dict_ind[next_op('a',list_type,0)]=lop
-            dict_ind[next_op('i',list_type,0)]=lop
+            if _bog_qp_enabled():
+                dict_ind[next_op('p',list_type,0)]=lop
+                dict_ind[next_op('p',list_type,1)]=lop
+            else:
+                dict_ind[next_op('a',list_type,0)]=lop
+                dict_ind[next_op('i',list_type,0)]=lop
             T1 = class1.large_operator(lop,fac, summ, coeff, stt, co)
             list_main.append(T1)
-            list_type[0]+=1
-            list_type[1]+=1
+            if _bog_qp_enabled():
+                list_type[2]+=2
+            else:
+                list_type[0]+=1
+                list_type[1]+=1
             print(summ,opp.upper,opp.lower)
         elif lop[0]=='T' and lop[1]=='2':
 
             #num1=ord('i')+list_type[0]
             #num2=ord('a')+list_type[1]
-            fac=1.0/4.0
-
-
-            summ=[next_op('a',list_type,0),next_op('a',list_type,1),next_op('i',list_type,0),next_op('i',list_type,1)]
-            coeff=[next_op('a',list_type,0),next_op('a',list_type,1),next_op('i',list_type,0),next_op('i',list_type,1)]
+            if _bog_qp_enabled():
+                fac=1.0/24.0
+                summ=[
+                    next_op('p',list_type,0),
+                    next_op('p',list_type,1),
+                    next_op('p',list_type,2),
+                    next_op('p',list_type,3),
+                ]
+                coeff=[
+                    next_op('p',list_type,0),
+                    next_op('p',list_type,1),
+                    next_op('p',list_type,2),
+                    next_op('p',list_type,3),
+                ]
+            else:
+                fac=1.0/4.0
+                summ=[next_op('a',list_type,0),next_op('a',list_type,1),next_op('i',list_type,0),next_op('i',list_type,1)]
+                coeff=[next_op('a',list_type,0),next_op('a',list_type,1),next_op('i',list_type,0),next_op('i',list_type,1)]
             #coeff=[chr(num2),chr(num2+1),chr(num1),chr(num1+1)]
             opp=func_ewt.contractedobj('op', 1, 1)
-            opp.upper=[next_op('a',list_type,0),next_op('a',list_type,1)]
-            opp.lower=[next_op('i',list_type,0),next_op('i',list_type,1)]
+            if _bog_qp_enabled():
+                opp.upper=[
+                    next_op('p',list_type,0),
+                    next_op('p',list_type,1),
+                    next_op('p',list_type,2),
+                    next_op('p',list_type,3),
+                ]
+                opp.lower=[]
+            else:
+                opp.upper=[next_op('a',list_type,0),next_op('a',list_type,1)]
+                opp.lower=[next_op('i',list_type,0),next_op('i',list_type,1)]
             stt=[[opp]]
             co=[[1,1]]
 
-            dict_ind[next_op('a',list_type,0)]=lop
-            dict_ind[next_op('a',list_type,1)]=lop
-            dict_ind[next_op('i',list_type,0)]=lop
-            dict_ind[next_op('i',list_type,1)]=lop
-            list_type[0]+=2
-            list_type[1]+=2
+            if _bog_qp_enabled():
+                dict_ind[next_op('p',list_type,0)]=lop
+                dict_ind[next_op('p',list_type,1)]=lop
+                dict_ind[next_op('p',list_type,2)]=lop
+                dict_ind[next_op('p',list_type,3)]=lop
+                list_type[2]+=4
+            else:
+                dict_ind[next_op('a',list_type,0)]=lop
+                dict_ind[next_op('a',list_type,1)]=lop
+                dict_ind[next_op('i',list_type,0)]=lop
+                dict_ind[next_op('i',list_type,1)]=lop
+                list_type[0]+=2
+                list_type[1]+=2
 
 
             T2 = class1.large_operator(lop,fac, summ, coeff, stt, co)

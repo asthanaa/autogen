@@ -1,6 +1,18 @@
 import copy
 from autogen.library.compare_test import create_matrices
 
+
+def _op_pos(name):
+    if len(name) > 2 and name[2].isdigit():
+        return int(name[2])
+    idx = len(name) - 1
+    while idx >= 0 and name[idx].isdigit():
+        idx -= 1
+    if idx < len(name) - 1:
+        return int(name[idx + 1 :])
+    return 1
+
+
 def no_connection(term,oplist,twice):
     coeff_list=[]
     for i in oplist:
@@ -34,8 +46,8 @@ def not_connected(term,twice):
                     flag=1
                     break
             #VT22T11
-            elif term.large_op_list[op].name[0]!='V' and term.large_op_list[op].name[0]!='X': 
-                if int(term.large_op_list[op].name[2])==len(oplist):
+            elif term.large_op_list[op].name[0]!='V' and term.large_op_list[op].name[0]!='X':
+                if _op_pos(term.large_op_list[op].name)==len(oplist):
                     #print 'appended this in oplist',term.large_op_list[op].name
                     oplist.append(op)
                     flag=1
@@ -121,6 +133,4 @@ def sameoperatorcase_addterms(list_terms):
     for term in list_terms:
         create_matrices(term)
     return list_terms
-
-
 

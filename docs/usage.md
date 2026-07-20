@@ -65,46 +65,30 @@ Benchmark the compare-heavy workflows:
 python scripts/bench_compare.py --repeat 3 --warmup 1
 ```
 
-### Generated einsum scripts
+### Regenerating method kernels
 
-The generated einsum examples (e.g., under `generated_code/`) rely on PySCF for
-integrals. Install it before running those scripts:
+The checked-in kernels under `autogen.methods.<method>.generated` are the reviewed
+runtime artifacts. Regeneration always targets a temporary candidate directory; it does
+not overwrite the installed implementation.
 
-```bash
-pip install pyscf
+```python
+from autogen.methods.ccsd.derivation.emitters.regenerate import regenerate as regenerate_ccsd
+from autogen.methods.eom_ccsd.derivation.emitters.regenerate import regenerate as regenerate_eom
+
+regenerate_ccsd("tmp/ccsd-candidate")
+regenerate_eom("tmp/eom-ccsd-candidate")
 ```
 
-Or with conda:
+Compare a candidate with the canonical generated package and run the method parity tests
+before deliberately synchronizing it. Generator options, spin conventions, and source
+specifications are kept in each method's `derivation` layer so output-directory names do
+not select scientific behavior.
+
+PySCF is needed only for molecular adapters and numerical molecular regressions:
 
 ```bash
-conda install -c conda-forge pyscf
+python -m pip install -e ".[molecular,test]"
 ```
 
-Generate einsum scripts:
-
-```bash
-python scripts/gen_einsum.py V2 T1 T1
-python scripts/gen_einsum.py V2 T2
-python scripts/gen_einsum.py F1 T1
-python scripts/gen_einsum.py CCSD_ENERGY
-python scripts/gen_einsum.py CCSD_AMPLITUDE
-python scripts/gen_einsum.py CCSD_AMPLITUDE --full --quiet
-python scripts/gen_einsum.py CCSD_AMPLITUDE --intermediates --quiet
-python scripts/gen_einsum.py --spec path/to/spec.py --full --quiet
-python scripts/gen_einsum.py --spec path/to/spec.py --intermediates --quiet
-python scripts/gen_einsum.py --spec method_inputs/ccsd/ccsd_spec.py --intermediates --quiet
-python scripts/gen_einsum.py --spec method_inputs/eom_ccsd/ee_eom_ccsd_spec.py --intermediates --quiet
-```
-
-Notes:
-- The CCSD energy script uses PySCF CCSD amplitudes and Fock matrix in the MO basis.
-- The default molecule for generated scripts is H2O/6-31G in `generated_code/pyscf_integrals.py`.
-- The iterative CCSD solver is generated under `generated_code/methods/ccsd/ccsd_amplitude/`.
-- Use `--full` to emit explicit residual terms and `--intermediates` to emit reusable intermediates.
-- Use `--spec` to drive custom term lists; the output defaults to `generated_code/methods/<spec-stem>/residuals.py`.
-- Method input specs live under `method_inputs/<method>/`.
-- For RHF spin-summed CCSD, generate with `AUTOGEN_SPIN_SUMMED=1` (optionally keep `SPIN_ADAPTED=True` in the spec).
-- Spin-summed residuals are generated directly from the Wicks terms. Set `AUTOGEN_SPIN_SUMMED_MODE=spinorb` only if you need the spin-orbital wrapper mapping.
-- EE-EOM-CCSD uses the same spin-summed RHF pathway and emits `eom_solver.py` plus `eom_pyscf_test.py` under `generated_code/methods/eom_ccsd/`.
-- The EOM spec uses the spin-orbital singlet wrapper when `SPIN_ADAPTED=True`. For EE-EOM-CCSD, the generator will coerce `AUTOGEN_SPIN_SUMMED_MODE=direct` to the singlet wrapper to keep results consistent with PySCF. In spin-orbital mode, the generator emits `residuals_spinorb.py` plus a `residuals.py` wrapper that maps singlet amplitudes in/out.
-- The EE-EOM-CCSD spec defaults to `EOM_BCH=True`, which builds H̅ via nested commutators (exact for CCSD, fewer terms than direct T-expansion).
+Run those calculations only on an approved remote host. Synthetic generation/parity
+tests remain part of the normal local suite.

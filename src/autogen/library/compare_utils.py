@@ -2,18 +2,24 @@ import os
 import time
 
 
+def _op_key(name):
+    if name and name.startswith("H") and len(name) >= 3 and name[1].isdigit() and name[2].isdigit():
+        return name
+    return name[:2] if name else ""
+
+
 def term_signature(term):
     # Build a coarse signature guaranteed to match for equivalent terms.
     map_org = getattr(term, "map_org", [])
     coeff_list = getattr(term, "coeff_list", [])
     sum_set = set(getattr(term, "sum_list", []))
-    op_types = [op.name[:2] for op in map_org]
+    op_types = [_op_key(op.name) for op in map_org]
     op_types.sort()
 
     coeff_shapes = []
     map_len = len(map_org)
     for idx, coeff in enumerate(coeff_list):
-        op_key = "E0" if idx >= map_len else map_org[idx].name[:2]
+        op_key = "E0" if idx >= map_len else _op_key(map_org[idx].name)
         dummy_a = dummy_i = dummy_p = dummy_x = 0
         nondummy_a = nondummy_i = nondummy_p = nondummy_x = 0
         for name in coeff:
@@ -61,7 +67,7 @@ def _op_label(map_org, idx):
     if idx >= len(map_org):
         return "E0"
     name = getattr(map_org[idx], "name", "")
-    return name[:2]
+    return _op_key(name)
 
 
 def _index_kind(term, name):
@@ -258,6 +264,37 @@ def is_simple_term(term):
     return all(len(coeff) < 4 for coeff in term.coeff_list)
 
 
+def _is_asym_hamiltonian_op(name):
+    if not name or not name.startswith("H") or len(name) < 3:
+        return False
+    if not name[1].isdigit() or not name[2].isdigit():
+        return False
+    return int(name[1]) != int(name[2])
+
+
+def _has_asym_ops(term):
+    for op in getattr(term, "large_op_list", []) or []:
+        if _is_asym_hamiltonian_op(getattr(op, "name", "")):
+            return True
+    return False
+
+
+def _strict_compare(term1, term2):
+    # Safe fallback for asymmetric operators: only merge exact matches.
+    if len(term1.coeff_list) != len(term2.coeff_list):
+        return 0
+    names1 = [getattr(op, "name", "") for op in getattr(term1, "map_org", [])]
+    names2 = [getattr(op, "name", "") for op in getattr(term2, "map_org", [])]
+    if names1 != names2:
+        return 0
+    if term1.coeff_list != term2.coeff_list:
+        return 0
+    if getattr(term1, "st", None) and getattr(term2, "st", None):
+        if len(term1.st[0]) != len(term2.st[0]):
+            return 0
+    return 1
+
+
 def _get_compare_mode():
     # Use env var to switch compare strategy without code changes.
     mode = os.getenv("AUTOGEN_COMPARE_MODE", "fast").lower().strip()
@@ -284,6 +321,8 @@ def _fast_compare_impl(term1, term2):
 
 
 def fast_compare(term1, term2):
+    if _has_asym_ops(term1) or _has_asym_ops(term2):
+        return _strict_compare(term1, term2)
     mode = _get_compare_mode()
     if mode == "full":
         from . import compare as cmp_full

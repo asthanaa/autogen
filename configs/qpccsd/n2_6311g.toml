@@ -1,0 +1,41 @@
+# Representative 6-311G production configuration.
+# For a PES, generate one immutable config/result directory per geometry and
+# use a separately audited continuation manifest.
+
+[system]
+molecule = "n2"
+basis = "6-311g"
+distance_angstrom = 1.10
+charge = 0
+spin = 0
+symmetry = true
+
+[active_space]
+orbitals = 6
+electrons = 6
+frozen_n1s = true
+
+[solver]
+max_iterations = 120
+max_evaluator_calls = 240
+residual_tolerance = 1.0e-8
+energy_tolerance = 1.0e-10
+step_max = 0.20
+# This floors positive inverse-diagonal preconditioner denominators only. The
+# Hamiltonian, root-defining residual, and reported energy remain unshifted.
+denominator_floor = 0.005
+newton_krylov = true
+newton_globalization = "hookstep"
+newton_step_max = 0.05
+max_jvp_calls = 192
+
+[projection]
+grid_size = 25
+validation_tolerance = 1.0e-8
+cache_mib = 4096
+parallel_mode = "auto"
+workers = 1
+blas_threads = 1
+
+[output]
+path = "results/n2_6311g_r1.10/production_result.json"

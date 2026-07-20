@@ -1,0 +1,84 @@
+{
+  "schema": "qpccsd-agp2rdm-pav-regression-v1",
+  "case_id": "n2-sto3g-cas66-r1p10",
+  "molecule": {
+    "symbols": ["N", "N"],
+    "distance_angstrom": 1.1,
+    "charge": 0,
+    "spin": 0,
+    "basis": "sto-3g",
+    "symmetry": true
+  },
+  "active_space": {
+    "electrons": 6,
+    "orbitals": 6,
+    "frozen_spatial_orbitals": 2,
+    "correlated_target_number": 10,
+    "physical_target_number": 14
+  },
+  "method_contract": {
+    "reference": "projected_agp_2rdm",
+    "reference_fit_data": [
+      "active_natural_occupations",
+      "active_pair_transfer_2rdm"
+    ],
+    "excitation_space": "spatial-total-singlet-block",
+    "include_active_t1_t2": true,
+    "energy_convention": "direct",
+    "cas_energy_added": false,
+    "cas_plus_delta_applied": false,
+    "projection": "particle_number_projection_after_variation",
+    "projected_residual_optimized": false,
+    "disentanglement": "ser2",
+    "w3_included": false,
+    "gauge_quadrature": "midpoint",
+    "grid_size": 9,
+    "validation_grid_size": 18,
+    "ode_substeps": 1,
+    "validation_ode_substeps": 2,
+    "contour_radius": 1.0
+  },
+  "coordinate_contract": {
+    "nspin": 16,
+    "pair_count": 8,
+    "quadruple_count": 57,
+    "coordinate_count": 65,
+    "active_pair_count": 6,
+    "active_quadruple_count": 21,
+    "pair_block_counts": {
+      "ix": 2,
+      "xy": 6
+    },
+    "quadruple_block_counts": {
+      "ijxy": 18,
+      "ixyz": 18,
+      "xyzw": 21
+    }
+  },
+  "expected": {
+    "qpccsd_energy_eh": -107.65269549964435,
+    "qpccsd_residual_norm": 9.660306061257431e-10,
+    "pav_qpccsd_energy_eh": -107.65060143314642,
+    "pav_validation_energy_eh": -107.65060143314642,
+    "pav_grid_error_eh": 3.47388253863627e-18,
+    "pav_imaginary_energy_error_eh": 7.422711739519054e-18,
+    "qpccsd_converged": true,
+    "pav_validation_passed": true,
+    "certified": true
+  },
+  "acceptance_tolerances": {
+    "energy_absolute_eh": 1e-8,
+    "residual_maximum": 1e-8,
+    "pav_grid_error_maximum_eh": 1e-8,
+    "pav_imaginary_energy_maximum_eh": 1e-8
+  },
+  "provenance": {
+    "calculation_site": "medora",
+    "source_unprojected_schema": "n2-active-t12-unprojected-point-v3",
+    "source_pav_schema": "n2-active-t12-ser2-pav-point-v2",
+    "source_unprojected_result_sha256": "7ff6008165f12a495c8b7084b1910ec4ba02a4a88c84039753ea38b11a37e364",
+    "source_amplitudes_sha256": "385baf85cf0b48860094a2388c6d8d83f1e903f96a5d79af68683f6dacb8f11a",
+    "source_reference_sha256": "788971c34ae835ee05a828b02196424bb306f08e15d56efad4e9ac08893122dc",
+    "source_note": "Certified N2/STO-3G R=1.10 Angstrom full-active-coordinate QPCCSD and fixed-amplitude Ser2 PAV calculation."
+  }
+}

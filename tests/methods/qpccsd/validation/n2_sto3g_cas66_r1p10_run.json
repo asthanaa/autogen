@@ -1,0 +1,31 @@
+{
+  "schema": "qpccsd-molecular-validation-request-v1",
+  "case_id": "n2-sto3g-cas66-r1p10",
+  "allowed_sites": ["medora", "talon", "authorized_desktop"],
+  "forbidden_sites": ["laptop", "ndsu"],
+  "input": {
+    "atom": "N 0 0 0; N 0 0 1.10",
+    "unit": "Angstrom",
+    "basis": "sto-3g",
+    "charge": 0,
+    "spin": 0,
+    "symmetry": true,
+    "active_electrons": 6,
+    "active_orbitals": 6,
+    "frozen_spatial_orbitals": 2
+  },
+  "production_config": {
+    "energy_convention": "direct",
+    "include_active_t1_t2": true,
+    "run_pav": true,
+    "pav_grid_size": 9,
+    "pav_validation_grid_size": 18,
+    "pav_ode_substeps": 1,
+    "pav_validation_ode_substeps": 2,
+    "contour_radius": 1.0,
+    "residual_tolerance": 1e-8,
+    "pav_validation_tolerance": 1e-8
+  },
+  "expected_fixture": "../fixtures/n2_sto3g_cas66_r1p10_certified.json",
+  "result_file": "n2_sto3g_cas66_r1p10_result.json"
+}
