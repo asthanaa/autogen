@@ -1,0 +1,46 @@
+{
+  "schema": "autogen-equation-manifest-v1",
+  "method": "ccsd",
+  "status": "frozen-validated-baseline",
+  "source_spec": {
+    "path": "derivation/specs/ccsd_spec.py",
+    "sha256": "63cae745ca68d7e64a71d2420f8353c52bc37f7a683eb7719bbf92ae3d3924c2"
+  },
+  "additional_source_specs": [
+    {
+      "path": "derivation/specs/ccsd_general_spec.py",
+      "sha256": "15dd83baec37b3399d79aa6ec077e58488e59c7442c341ee3f2d4fcd5d2249c1"
+    }
+  ],
+  "generated_artifacts": [
+    {
+      "path": "generated/residuals.py",
+      "sha256": "9615bdd34055e0fe1d480fb92d6259ad839335a4350ffa818107afe149955646"
+    },
+    {
+      "path": "generated/residuals_spinorb.py",
+      "sha256": "c33d5091dbca6a463558bc497d47462407c4927b3b24786d1d50e2623fd47824"
+    },
+    {
+      "path": "generated/f1t1_einsum.py",
+      "sha256": "880b7f1d8f71c5030827c3039717c9d42516709894590b31dcc0022e02f80e40"
+    },
+    {
+      "path": "generated/v2t1t1_einsum.py",
+      "sha256": "fd24bd95bd8db8119594e6146aa78f7c8342a0b42213a362223fa1d0b2d6c01d"
+    },
+    {
+      "path": "generated/v2t2_einsum.py",
+      "sha256": "37f969a1bc11e33e1701ae467403344175b76775d65781b50377f39b128b432f"
+    },
+    {
+      "path": "generated/general/residuals.py",
+      "sha256": "a130b114bb9850cffe2d0239feca3e6dd1130adeac32d32e82f6487faef430c8"
+    }
+  ],
+  "emitter": {
+    "path": "derivation/emitters/regenerate.py",
+    "sha256": "086ffc8916c0584eb7d05d2591e22911e681728b4f1f4028b62a49e206c38ca0"
+  },
+  "regeneration_policy": "replace_only_after_equation_numeric_pyscf_parity"
+}

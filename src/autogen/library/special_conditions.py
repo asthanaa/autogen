@@ -10,6 +10,17 @@
 #operator with lower order which is not among the equivalent operators.
 #If any of the case is truw, multiply the term with two corresponding to the missing part. 
 
+def _op_pos(name):
+    if len(name) > 2 and name[2].isdigit():
+        return int(name[2])
+    idx = len(name) - 1
+    while idx >= 0 and name[idx].isdigit():
+        idx -= 1
+    if idx < len(name) - 1:
+        return int(name[idx + 1 :])
+    return 1
+
+
 def create_map(term,equivop):
             #for op in term.map_org:
             #atleast 2 equivalent operators present with one of them as the first contraction.
@@ -48,25 +59,16 @@ def create_map2(term,equivop):
     for op in term.large_op_list:
         if equivop in op.name:
             if posop1>(len(term.large_op_list)+1):
-                if len(op.name)>2:
-                    posop1=int(op.name[2])
-                else:
-                    posop1=1
-                    # Default to position 1 when an operator lacks an explicit index.
+                posop1 = _op_pos(op.name)
             elif posop2>(len(term.large_op_list)+1):
-                if len(op.name)>2:
-                    posop2=int(op.name[2])
-                else:
-                   posop2=1
-                   # Default to position 1 when an operator lacks an explicit index.
+                posop2 = _op_pos(op.name)
     oplistmiddle=[]
     #print 'position of two equiv operators',posop1,posop2
     for op in term.large_op_list:
-        if len(op.name)>2:
-            if int(op.name[2])>posop1 and  int(op.name[2])<posop2:
-               oplistmiddle.append(op.name)
-            elif int(op.name[2])<posop1 and int(op.name[2])>posop2:
-                oplistmiddle.append(op.name)
+        if _op_pos(op.name) > posop1 and _op_pos(op.name) < posop2:
+            oplistmiddle.append(op.name)
+        elif _op_pos(op.name) < posop1 and _op_pos(op.name) > posop2:
+            oplistmiddle.append(op.name)
     output=[]
     for op in oplistmiddle:
         output.extend(create_map(term,op))
@@ -80,23 +82,19 @@ def non_equivop(term,map_out,equivop):
     for op in term.large_op_list:
         if equivop in op.name:
             #print equivop, op.name
-            if len(op.name)>2:
-                #print 'op.name >2',op.name,pos1
-                if int(op.name[2])<pos1:
-                    #print op.name[2],pos1
-                    pos1=int(op.name[2])
-                    found_pos=1
+            if _op_pos(op.name) < pos1:
+                pos1 = _op_pos(op.name)
+                found_pos = 1
             else:
-                pos1=0
-                #print op.name[2],pos1
-                found_pos=1
+                pos1 = min(pos1, _op_pos(op.name))
+                found_pos = 1
     ##if each equiv op is connected to a arm which is created before pos1, it is equiv. is one of the arms in one is created after the first pos, it is non-eq
     for opeq in map_out:
         inner_comm=0
         for op1 in opeq:
             if len(op1)>2:#case when the opeartor can be in outer comm
-                pos2=int(op1[2])
-                if pos2<pos1:
+                pos2 = _op_pos(op1)
+                if pos2 < pos1:
                     inner_comm=1
             elif op1[0]=='V':
                 inner_comm=1
@@ -112,18 +110,17 @@ def non_equivop2(term,map_out2,equivop,opmiddle):
         for c in map_out2[opi]:
 
             #print c, opmiddle[opi]
-            if len(c)>2 and len(opmiddle[opi])>2:
-                if (int(c[2])<int(opmiddle[opi][2])) and (equivop not in c):
-                    return 0
+            if _op_pos(c) < _op_pos(opmiddle[opi]) and (equivop not in c):
+                return 0
             else:
                 return 0
         #if it connects to two equivalent operators its fine
         first=0
         for c in map_out2[opi]:
             if equivop in c and len(c)>2 and first==0:
-                first=c[2]
+                first=_op_pos(c)
             elif equivop in c and len(c)>2 and first!=0:
-                if c[2]!=first:
+                if _op_pos(c)!=first:
                     return 0
     if not opmiddle:
         return 0

@@ -27,6 +27,8 @@ def permutation_check(term1,term2):
 
 
     if map1_open and map2_open:
+        if len(map1_open) < 4 or len(map2_open) < 4:
+            return 0
         #Two terms are permutations if the two terms are equal but the open indices are from different types of operators
         #print 'maps are', map1_open, map2_open
         

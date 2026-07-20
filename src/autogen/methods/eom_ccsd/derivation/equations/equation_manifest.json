@@ -1,0 +1,32 @@
+{
+  "schema": "autogen-equation-manifest-v1",
+  "method": "ee-eom-ccsd",
+  "status": "frozen-validated-baseline",
+  "source_spec": {
+    "path": "derivation/specs/ee_eom_ccsd_spec.py",
+    "sha256": "1b5a9f2d9c8adf9b5c438053d5a2b280eb7bc3f96a4d54f048815ed15f5f4bb0"
+  },
+  "generated_artifacts": [
+    {
+      "path": "generated/residuals.py",
+      "sha256": "e721f33ebd43230ba791e664f12c4ef6a8348a9f572fc37c6a952bd028203e10"
+    },
+    {
+      "path": "generated/residuals_spinorb.py",
+      "sha256": "827091af16a8a6f4795c0082897849c1e79fe76f590388210027d039b41e9ead"
+    },
+    {
+      "path": "generated/spinorb/residuals.py",
+      "sha256": "9e6ff676607855999597f1e04a00f70ceb26bf06d7e9778c8bd957325f113e4b"
+    },
+    {
+      "path": "generated/spinorb/residuals_spinorb.py",
+      "sha256": "827091af16a8a6f4795c0082897849c1e79fe76f590388210027d039b41e9ead"
+    }
+  ],
+  "emitter": {
+    "path": "derivation/emitters/regenerate.py",
+    "sha256": "bdbdb4757b6f9d5e3887e6dd4f50672352f0a880b906a10ec23565e934394440"
+  },
+  "regeneration_policy": "replace_only_after_equation_numeric_pyscf_parity"
+}

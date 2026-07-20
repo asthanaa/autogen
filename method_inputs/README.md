@@ -1,6 +1,6 @@
-# Method input specs
+# Legacy method-input paths
 
-These files define the operator terms and settings used by `scripts/gen_einsum.py`.
-
-- CCSD spec: `method_inputs/ccsd/ccsd_spec.py`
-- EE-EOM-CCSD spec: `method_inputs/eom_ccsd/ee_eom_ccsd_spec.py`
+Canonical specifications now live with each implementation under
+`src/autogen/methods/<method>/derivation/specs`.  These modules are temporary
+forwarders for older scripts that still load `method_inputs` paths; they do
+not contain a second copy of any equations.
